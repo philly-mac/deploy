@@ -1,5 +1,5 @@
 module Deploy
-  class Base
+  module Base
     class << self
       attr_accessor :local_commands
       attr_accessor :remote_commands
