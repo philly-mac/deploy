@@ -15,7 +15,9 @@ require "deploy/base"
 require "deploy/recipies/#{recipe}"
 
 c = ::Deploy::Config.new
-c.env = env
+
+c.set :env, env
+c.environment_config
 
 r = eval("::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}")
 
