@@ -105,24 +105,6 @@ module Deploy
         def restart
           FileUtils.touch "#{current_path}/tmp/restart.txt"
         end
-
-        private
-
-        def current_path
-          "#{DEPLOY_ROOT}#{APP_ROOT}/current"
-        end
-
-        def shared_path
-          "#{DEPLOY_ROOT}#{APP_ROOT}/shared"
-        end
-
-        def release_path
-          "#{DEPLOY_ROOT}#{APP_ROOT}/releases"
-        end
-
-        def latest_deploy
-          "#{release_path}/#{Dir["#{release_path}/*"].sort.last}"
-        end
       end
     end
   end

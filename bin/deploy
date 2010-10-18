@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+APP_ROOT = "#{File.dirname(File.expand_path(__FILE__))}/.."
+
+$: << "#{APP_ROOT}/lib"
+
+recipe  = ARGV[0]
+env     = ARGV[1]
+command = ARGV[3]
+
+exit if ARGV.size < 3
+
+require "deploy/config"
+require "deploy/base"
+require "deploy/recipies/#{recipe}"
+
+c = ::Deploy::Config.new
+
+eval "r = ::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}"
+
+r.send(recipe.to_sym, env)
