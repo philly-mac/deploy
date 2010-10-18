@@ -13,8 +13,8 @@ module Deploy
     end
 
     def method_missing(method_name, *args, &block)
-      # attr_accessor method_name
-      puts "NOOOOOOOOOOOOOOOooooooooooooooooooooo method #{method_name}"
+      ::Deploy::Config.send :attr_accessor, method_name.to_sym
+      self.send(:"#{method_name}=", *args)
     end
   end
 end

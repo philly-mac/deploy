@@ -6,7 +6,7 @@ $: << "#{APP_ROOT}/lib"
 
 recipe  = ARGV[0]
 env     = ARGV[1]
-command = ARGV[3]
+command = ARGV[2]
 
 exit if ARGV.size < 3
 
@@ -15,7 +15,8 @@ require "deploy/base"
 require "deploy/recipies/#{recipe}"
 
 c = ::Deploy::Config.new
+c.env = env
 
-eval "r = ::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}"
+r = eval("::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}")
 
-r.send(recipe.to_sym, env)
+r.send(command.to_sym, env)

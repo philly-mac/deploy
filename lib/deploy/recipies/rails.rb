@@ -6,14 +6,12 @@ module Deploy
 
       class << self
 
-        def first_run(env = "production")
-          self.env = env
+        def first_run(config)
           create_directories
           setup_db
         end
 
-        def deploy(env = "production")
-          self.env = env
+        def deploy(config)
           get_code
           release_dir
           unpack
@@ -23,6 +21,8 @@ module Deploy
           link
           restart
         end
+
+        private
 
         def create_directories
           create_directory "#{shared_path}/log"
