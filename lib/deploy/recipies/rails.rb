@@ -3,6 +3,7 @@ module Deploy
     class Rails
 
       extend ::Deploy::Base
+      extend ::Deploy::RemoteCommands
 
       class << self
         attr_accessor :config
@@ -28,36 +29,35 @@ module Deploy
         private
 
         def create_directories
-          create_directory "#{config.shared_path}/log"
-          create_directory "#{config.shared_path}/db"
-          create_directory "#{config.shared_path}/system"
-          create_directory "#{config.shared_path}/config"
-          create_directory "#{config.shared_path}/config/monit.d"
-          create_directory "#{config.shared_path}/config/hostapd.d"
-          create_directory "#{config.shared_path}/config/dnsmasq.d"
-          create_directory "#{config.shared_path}/config/ifconfig.d"
-          create_directory "#{config.shared_path}/solr/data"
-          create_directory "#{config.shared_path}/user-files", 0770
-          create_directory "#{config.shared_path}/pids", 0770
-          create_directory "#{config.shared_path}/avatars", 0770
-        end
-
-        def create_directory(dir_name, permissions = nil)
-          FileUtils.mkdir_p dir_name
-          FileUtils.chmod permissions, dir_name if permissions
+          mkdir "mkdir -p #{config.shared_path}/log"
+          mkdir "mkdir -p #{config.shared_path}/db"
+          mkdir "mkdir -p #{config.shared_path}/system"
+          mkdir "mkdir -p #{config.shared_path}/config"
+          mkdir "mkdir -p #{config.shared_path}/config/monit.d"
+          mkdir "mkdir -p #{config.shared_path}/config/hostapd.d"
+          mkdir "mkdir -p #{config.shared_path}/config/dnsmasq.d"
+          mkdir "mkdir -p #{config.shared_path}/config/ifconfig.d"
+          mkdir "mkdir -p #{config.shared_path}/solr/data"
+          mkdir "mkdir -p #{config.shared_path}/user-files", 0770
+          mkdir "mkdir -p #{config.shared_path}/pids", 0770
+          mkdir "mkdir -p #{config.shared_path}/avatars", 0770
+          push!
         end
 
         def setup_db
-          FileUtils.cd config.current_path
-          system "mysql -u root dashboard_production -e 'show tables;' 2>&1 > /dev/null"
-          if $?.exitstatus != 0
-            system "RAILS_ENV=#{self.env} bundle exec rake db:setup"
-          end
+          remote "cd #{config.current_path}"
+          on_bad_exit "mysql -u root dashboard_production -e 'show tables;' 2>&1 > /dev/null",
+            "RAILS_ENV=#{self.env} bundle exec rake db:setup"
+          push!
         end
 
         def release_dir
-          FileUtils.mkdir_p config.shared_path if !File.exists? config.shared_path
-          FileUtils.mkdir_p config.releases_path if !File.exists? config.releases_path
+          on_good_exit "[ ! -e #{config.shared_path} ]",
+            :mkdir, "#{config.shared_path}"
+
+          on_good_exit "[ ! -e #{config.releases_path} ]",
+            :mkdir, "#{config.releases_path}"
+          push!
         end
 
         def unpack

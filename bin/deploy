@@ -22,3 +22,5 @@ c.config_environment
 r = eval("::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}")
 
 r.send(command.to_sym, env)
+
+r.push!
