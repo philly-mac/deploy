@@ -17,7 +17,7 @@ module Deploy
       set :release_path,  "#{self.deploy_root}#{self.app_root}/releases"
     end
 
-    def environment_config
+    def config_environment
       file = "#{APP_ROOT}/config/#{self.env}.rb"
       if File.exists?(file)
         file_contents = ""
