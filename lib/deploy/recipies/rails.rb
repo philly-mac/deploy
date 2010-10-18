@@ -29,43 +29,47 @@ module Deploy
         private
 
         def create_directories
-          mkdir "mkdir -p #{config.shared_path}/log"
-          mkdir "mkdir -p #{config.shared_path}/db"
-          mkdir "mkdir -p #{config.shared_path}/system"
-          mkdir "mkdir -p #{config.shared_path}/config"
-          mkdir "mkdir -p #{config.shared_path}/config/monit.d"
-          mkdir "mkdir -p #{config.shared_path}/config/hostapd.d"
-          mkdir "mkdir -p #{config.shared_path}/config/dnsmasq.d"
-          mkdir "mkdir -p #{config.shared_path}/config/ifconfig.d"
-          mkdir "mkdir -p #{config.shared_path}/solr/data"
-          mkdir "mkdir -p #{config.shared_path}/user-files", 0770
-          mkdir "mkdir -p #{config.shared_path}/pids", 0770
-          mkdir "mkdir -p #{config.shared_path}/avatars", 0770
+          mkdir "config.shared_path}/log"
+          mkdir "config.shared_path}/db"
+          mkdir "config.shared_path}/system"
+          mkdir "config.shared_path}/config"
+          mkdir "config.shared_path}/config/monit.d"
+          mkdir "config.shared_path}/config/hostapd.d"
+          mkdir "config.shared_path}/config/dnsmasq.d"
+          mkdir "config.shared_path}/config/ifconfig.d"
+          mkdir "config.shared_path}/solr/data"
+          mkdir "config.shared_path}/user-files", 0770
+          mkdir "config.shared_path}/pids", 0770
+          mkdir "config.shared_path}/avatars", 0770
           push!
         end
 
         def setup_db
-          remote "cd #{config.current_path}"
           on_bad_exit "mysql -u root dashboard_production -e 'show tables;' 2>&1 > /dev/null",
-            "RAILS_ENV=#{self.env} bundle exec rake db:setup"
+            [
+              "cd #{config.current_path}",
+              "RAILS_ENV=#{config.env} bundle exec rake db:setup"
+            ]
           push!
         end
 
         def release_dir
-          on_good_exit "[ ! -e #{config.shared_path} ]",
-            :mkdir, "#{config.shared_path}"
+          on_good_exit file_not_exists(config.shared_path, false),
+            [[:mkdir, ["#{config.shared_path}",nil,false]]]
 
-          on_good_exit "[ ! -e #{config.releases_path} ]",
-            :mkdir, "#{config.releases_path}"
+          on_good_exit file_not_exists(config.releases_path, false),
+            [[:mkdir, ["#{config.releases_path}",nil,false]]]
           push!
         end
 
         def unpack
-          if File.exists?("/tmp/#{ARCHIVE_NAME}#{PACKING_TYPE}")
-            FileUtils.cd "/tmp"
-            system "tar -xzf #{ARCHIVE_NAME}#{PACKING_TYPE}"
-            FileUtils.mv ARCHIVE_NAME, "#{config.release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
-          end
+          on_good_exit file_exists("/tmp/#{config.archive_name}#{config.packing_type}", false),
+            [
+              "cd /tmp ",
+              "tar -xzf #{config.archive_name}#{config.packing_type}",
+              "mv #{config.archive_name} #{config.release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+            ]
+          push!
         end
 
         def clean_up
@@ -101,12 +105,14 @@ module Deploy
         end
 
         def link
-          FileUtils.rm current_path
-          FileUtils.ln_s latest_deploy, config.current_path
+          remote "rm #{config.current_path}"
+          remote "ln -s #{lateset_deploy} #{config.current_path}"
+          push!
         end
 
         def restart
-          FileUtils.touch "#{config.current_path}/tmp/restart.txt"
+          remote "touch #{config.current_path}/tmp/restart.txt"
+          push!
         end
       end
     end

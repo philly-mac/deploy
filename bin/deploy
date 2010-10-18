@@ -12,6 +12,7 @@ exit if ARGV.size < 3
 
 require "deploy/config"
 require "deploy/base"
+require "deploy/remote_commands"
 require "deploy/recipies/#{recipe}"
 
 c = ::Deploy::Config.new

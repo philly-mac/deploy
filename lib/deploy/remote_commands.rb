@@ -1,27 +1,47 @@
 module Deploy
   module RemoteCommands
-    def mkdir(dir_name, permissions = nil)
-      remote "mkdir -p #{dir_name}"
-      remote "chmod #{permissions} #{dir_name}" if permissions
+    def mkdir(dir_name, permissions = nil, remote = true)
+      commands = [ "mkdir -p #{dir_name}" ]
+      commands << "chmod #{permissions} #{dir_name}" if permissions
+      remote_or_return(remote)
     end
 
-    def on_good_exit(test, command)
-      remote test
-      remote "if [ $? = 0 ]; then bash -c #{command}; fi"
+    def file_exists(file, remote = true)
+      commands = ["[ -e #{file} ]"]
+      remote_or_return(commands, remote)
+    end
 
-      if command.is_a?(String)
-        remote "if [ $? = 0 ]; then bash -c #{command}; fi"
-      elsif command.is_a?(Symbol)
-        "if [ $? = 0 ]; then bash -c #{send command, *args}; fi"
+    def on_good_exit(test, commands)
+      remote test
+      remote "if [ $? = 0 ]; then bash -c #{compile_commands(commands)}; fi"
+    end
+
+    def on_bad_exit(test, commands)
+      remote test
+      remote "if [ $? -ne 0 ]; then bash -c #{compile_commands(commands)}; fi"
+    end
+
+    def compile_commands(commands)
+      remote test
+      all_commands = commands.map do |command|
+        ret_command = ""
+        if command.is_a?(Array)
+          ret_command = send(command.first, *command.last)
+        elsif command.is_a?(String)
+          ret_command = command
+        end
+        ret_command
       end
+
+      all_comands.join(" && ")
     end
 
-    def on_bad_exit(test, command, *args)
-      remote test
-      if command.is_a?(String)
-        remote "if [ $? -ne 0 ]; then bash -c #{command}; fi"
-      elsif command.is_a?(Symbol)
-        "if [ $? -ne 0 ]; then bash -c #{send command, *args}; fi"
+    def remote_or_return(remote)
+      if remote
+        commands.each{|c| remote c }
+        return
+      else
+        commands.join(" && ")
       end
     end
   end
