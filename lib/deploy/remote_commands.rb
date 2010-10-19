@@ -13,12 +13,12 @@ module Deploy
 
     def on_good_exit(test, commands)
       remote test
-      remote "if [ $? = 0 ]; then bash -c #{compile_commands(commands)}; fi"
+      remote "if [ $? = 0 ]; then #{compile_commands(commands)}; fi"
     end
 
     def on_bad_exit(test, commands)
       remote test
-      remote "if [ $? -ne 0 ]; then bash -c #{compile_commands(commands)}; fi"
+      remote "if [ $? -ne 0 ]; then #{compile_commands(commands)}; fi"
     end
 
     def compile_commands(commands)
