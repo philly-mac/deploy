@@ -74,29 +74,29 @@ module Deploy
           if File.exists?("/tmp/release.tar.gz")
             FileUtils.cd "/tmp"
             system "tar -xzf #{"/tmp/release.tar.gz"}"
-            FileUtils.mv config.archive_name, "#{release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+            FileUtils.mv config.archive_name, "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
           end
         end
 
         def clean_up
-          all_releases = Dir["#{release_path}/*"].sort
+          all_releases = Dir["#{config.releases_path}/*"].sort
           if (num_releases = all_releases.size) > config.max_num_releases
             num_to_delete = num_releases - config.max_num_releases
 
             num_to_delete.times do
-              FileUtils.r_rf "#{release_path}/#{all_releases.delete_at(0)}"
+              FileUtils.r_rf "#{config.releases_path}/#{all_releases.delete_at(0)}"
             end
           end
         end
 
         def bundle
           shared_dir = File.join(config.shared_path, 'bundle')
-          release_dir = File.join(config.release_path, '.bundle')
+          release_dir = File.join(config.releases_path, '.bundle')
 
           FileUtils.mkdir_p shared_dir
           FileUtils.ln_s shared_dir, release_dir
 
-          FileUtils.cd config.release_path
+          FileUtils.cd config.releases_path
 
           system "bundle check 2>&1 > /dev/null"
 
