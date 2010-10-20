@@ -1,9 +1,12 @@
 module Deploy
   module Base
     attr_accessor :remote_commands
+    
+    def remote_commands
+      self.remote_commands ||= []
+    end
 
     def remote(command)
-      self.remote_commands ||= []
       self.remote_commands << command
     end
 
