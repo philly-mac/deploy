@@ -124,7 +124,7 @@ module Deploy
         end
         
         def latest_deploy
-          "#{config.releases_path}/#{Dir["#{config.releases_path}/*"].sort.last}"
+          Dir["#{config.releases_path}/*"].sort.last
         end
         
       end
