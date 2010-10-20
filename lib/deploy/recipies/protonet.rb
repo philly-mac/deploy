@@ -75,8 +75,9 @@ module Deploy
           if File.exists?("/tmp/release.tar.gz")
             FileUtils.cd "/tmp"
             system "tar -xzf #{"/tmp/release.tar.gz"}"
-            
-            FileUtils.mv "/tmp/dashboard/*", "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+            release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+            FileUtils.mkdir_p release_timestamp
+            FileUtils.mv "/tmp/dashboard/*", release_timestamp
           end
         end
 
