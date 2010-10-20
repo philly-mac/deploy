@@ -100,8 +100,9 @@ module Deploy
         end
 
         def migrate
-          FileUtils.cd config.current_path
-          system "RAILS_ENV=#{config.env} rake db:migrate"
+          remote "cd #{config.current_path}"
+          remote "RAILS_ENV=#{config.env} rake db:migrate"
+          push!
         end
 
         def link
