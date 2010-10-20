@@ -12,6 +12,10 @@ module Deploy
     def initialize
       set :deploy_root,   "/var/www"
       set :app_name,      "test"
+      set_paths!
+    end
+
+    def set_paths!
       set :current_path,  "#{self.deploy_root}/#{self.app_name}/current"
       set :shared_path,   "#{self.deploy_root}/#{self.app_name}/shared"
       set :releases_path, "#{self.deploy_root}/#{self.app_name}/releases"
@@ -35,6 +39,11 @@ module Deploy
         end
         eval file_contents
       end
+      set_paths!
+    end
+
+    def refresh!
+
     end
 
     def set(key, value)
@@ -47,3 +56,4 @@ module Deploy
     end
   end
 end
+
