@@ -61,6 +61,7 @@ module Deploy
 
         def get_code
           FileUtils.cd "/tmp"
+          system "rm -f /tmp/release.tar.gz"
           system "wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz" && unpack
         end
 
