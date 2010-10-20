@@ -15,6 +15,7 @@ module Deploy
           self.config = config
           create_directories
           get_code
+          link
           setup_db
         end
 
@@ -77,7 +78,7 @@ module Deploy
             system "tar -xzf #{"/tmp/release.tar.gz"}"
             release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
             FileUtils.mkdir_p release_timestamp
-            FileUtils.mv "/tmp/dashboard/*", release_timestamp
+            system "mv /tmp/dashboard/* #{release_timestamp}"
           end
         end
 
@@ -121,6 +122,11 @@ module Deploy
         def restart
           FileUtils.touch "#{current_path}/tmp/restart.txt"
         end
+        
+        def latest_deploy
+          "#{config.releases_path}/#{Dir["#{config.releases_path}/*"].sort.last}"
+        end
+        
       end
     end
   end
