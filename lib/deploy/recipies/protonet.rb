@@ -52,7 +52,7 @@ module Deploy
         end
 
         def setup_db
-          FileUtils.cd current_path
+          FileUtils.cd config.current_path
           system "mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null"
           if $?.exitstatus != 0
             system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
@@ -65,8 +65,8 @@ module Deploy
         end
 
         def release_dir
-          FileUtils.mkdir_p shared_path if !File.exists? shared_path
-          FileUtils.mkdir_p releases_path if !File.exists? releases_path
+          FileUtils.mkdir_p config.shared_path if !File.exists? config.shared_path
+          FileUtils.mkdir_p config.releases_path if !File.exists? config.releases_path
         end
 
         def unpack
@@ -89,13 +89,13 @@ module Deploy
         end
 
         def bundle
-          shared_dir = File.join(shared_path, 'bundle')
-          release_dir = File.join(release_path, '.bundle')
+          shared_dir = File.join(config.shared_path, 'bundle')
+          release_dir = File.join(config.release_path, '.bundle')
 
           FileUtils.mkdir_p shared_dir
           FileUtils.ln_s shared_dir, release_dir
 
-          FileUtils.cd release_path
+          FileUtils.cd config.release_path
 
           system "bundle check 2>&1 > /dev/null"
 
@@ -105,13 +105,13 @@ module Deploy
         end
 
         def migrate
-          FileUtils.cd current_path
+          FileUtils.cd config.current_path
           system "RAILS_ENV=#{env} rake db:migrate"
         end
 
         def link
-          FileUtils.rm current_path
-          FileUtils.ln_s latest_deploy, current_path
+          FileUtils.rm config.current_path
+          FileUtils.ln_s config.latest_deploy, config.current_path
         end
 
         def restart
