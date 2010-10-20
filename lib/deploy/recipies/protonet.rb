@@ -32,18 +32,18 @@ module Deploy
         private
 
         def create_directories
-          create_directory "#{shared_path}/log"
-          create_directory "#{shared_path}/db"
-          create_directory "#{shared_path}/system"
-          create_directory "#{shared_path}/config"
-          create_directory "#{shared_path}/config/monit.d"
-          create_directory "#{shared_path}/config/hostapd.d"
-          create_directory "#{shared_path}/config/dnsmasq.d"
-          create_directory "#{shared_path}/config/ifconfig.d"
-          create_directory "#{shared_path}/solr/data"
-          create_directory "#{shared_path}/user-files", '0770'
-          create_directory "#{shared_path}/pids", '0770'
-          create_directory "#{shared_path}/avatars", '0770'
+          create_directory "#{config.shared_path}/log"
+          create_directory "#{config.shared_path}/db"
+          create_directory "#{config.shared_path}/system"
+          create_directory "#{config.shared_path}/config"
+          create_directory "#{config.shared_path}/config/monit.d"
+          create_directory "#{config.shared_path}/config/hostapd.d"
+          create_directory "#{config.shared_path}/config/dnsmasq.d"
+          create_directory "#{config.shared_path}/config/ifconfig.d"
+          create_directory "#{config.shared_path}/solr/data"
+          create_directory "#{config.shared_path}/user-files", '0770'
+          create_directory "#{config.shared_path}/pids", '0770'
+          create_directory "#{config.shared_path}/avatars", '0770'
         end
 
         def create_directory(dir_name, permissions = nil)
@@ -121,3 +121,4 @@ module Deploy
     end
   end
 end
+
