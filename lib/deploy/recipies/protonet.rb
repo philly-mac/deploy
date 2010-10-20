@@ -1,4 +1,6 @@
 require 'fileutils'
+require 'ruby-debug'
+Debugger.start
 
 module Deploy
   module Recipies
@@ -14,14 +16,13 @@ module Deploy
         def setup(config)
           self.config = config
           create_directories
+          get_code
           setup_db
         end
 
         def deploy(config)
           self.config = config
           get_code
-          release_dir
-          unpack
           bundle
           migrate
           clean_up
@@ -32,8 +33,6 @@ module Deploy
         private
 
         def create_directories
-          create_directory config.current_path
-          create_directory config.releases_path
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
           create_directory "#{config.shared_path}/system"
@@ -62,19 +61,21 @@ module Deploy
         end
 
         def get_code
-          FileUtils.cd "/tmp"
-          system "wget http://releases.protonet.info/latest/#{config.key}"
+          FileUtils.cd "/tmp" do
+            system "wget http://releases.protonet.info/latest/#{config.key} -O release.tar.gz"
+          end
+          unpack
         end
 
         def release_dir
-          FileUtils.mkdir_p config.shared_path if !File.exists? config.shared_path
           FileUtils.mkdir_p config.releases_path if !File.exists? config.releases_path
         end
 
         def unpack
-          if File.exists?("/tmp/#{config.archive_name}#{config.packing_type}")
+          release_dir
+          if File.exists?("/tmp/release.tar.gz")
             FileUtils.cd "/tmp"
-            system "tar -xzf #{config.archive_name}#{config.packing_type}"
+            system "tar -xzf #{"/tmp/release.tar.gz"}"
             FileUtils.mv config.archive_name, "#{release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
           end
         end
