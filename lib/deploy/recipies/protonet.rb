@@ -15,7 +15,6 @@ module Deploy
           self.config = config
           create_directories
           get_code
-          link
           setup_db
         end
 
@@ -52,7 +51,7 @@ module Deploy
         end
 
         def setup_db
-          FileUtils.cd config.current_path do
+          FileUtils.cd latest_deploy do
             system "mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null"
             if $?.exitstatus != 0
               system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
