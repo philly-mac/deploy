@@ -8,7 +8,7 @@ module Deploy
       class << self
         attr_accessor :config
 
-        def first_run(config)
+        def setup(config)
           self.config = config
           create_directories
           setup_db
@@ -16,10 +16,10 @@ module Deploy
 
         def deploy(config)
           self.config = config
-          get_code
+#          get_code
           release_dir
           unpack
-          bundle
+          #bundle
           migrate
           clean_up
           link
@@ -73,14 +73,15 @@ module Deploy
         end
 
         def clean_up
-          all_releases = Dir["#{config.release_path}/*"].sort
-          if (num_releases = all_releases.size) > MAX_NUM_RELEASES
-            num_to_delete = num_releases - MAX_NUM_RELEASES
-
-            num_to_delete.times do
-              FileUtils.r_rf "#{config.release_path}/#{all_releases.delete_at(0)}"
-            end
-          end
+          remote "cd #{config.releases_path}"
+          remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
+          remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
+          remote "export COUNTER=1"
+          on_good_exit "[ $NUM_TO_REMOVE =~ ^[0-9]+$ ] && [ $COUNTER =~ ^[0-9]+$ ] && [ $NUM_TO_REMOVE -ge 1 ]",
+            [
+              "for i in $( ls -tlr -m1 ); do echo rm -rf $i [ $COUNTER == $NUM_TO_REMOVE ] && break; COUNTER=$(( $COUNTER + 1 )) done",
+            ]
+          push!
         end
 
         def bundle
@@ -106,13 +107,15 @@ module Deploy
         end
 
         def link
+          remote "cd #{config.releases_path}"
           remote "rm #{config.current_path}"
-          remote "ln -s #{lateset_deploy} #{config.current_path}"
+          remote "for i in $( ls -rl -m1 ); do LATEST_RELEASE=$i; break; done"
+          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
           push!
         end
 
         def restart
-          remote "touch #{config.current_path}/tmp/restart.txt"
+          remote "touch #{config.shared_path}/tmp/restart.txt"
           push!
         end
       end

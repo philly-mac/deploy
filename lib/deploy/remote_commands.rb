@@ -6,6 +6,11 @@ module Deploy
       remote_or_return(commands, remote)
     end
 
+    def file_not_exists(file, remote = true)
+      commands = ["[ ! -e #{file} ]"]
+      remote_or_return(commands, remote)
+    end
+
     def file_exists(file, remote = true)
       commands = ["[ -e #{file} ]"]
       remote_or_return(commands, remote)

@@ -11,10 +11,10 @@ module Deploy
 
     def initialize
       set :deploy_root,   "/var/www"
-      set :app_root,      "test"
+      set :app_root,      "/test"
       set :current_path,  "#{self.deploy_root}#{self.app_root}/current"
       set :shared_path,   "#{self.deploy_root}#{self.app_root}/shared"
-      set :release_path,  "#{self.deploy_root}#{self.app_root}/releases"
+      set :releases_path,  "#{self.deploy_root}#{self.app_root}/releases"
     end
 
     def config_environment
@@ -35,9 +35,8 @@ module Deploy
     end
 
     def method_missing(method_name, *args, &block)
-      method_name = method_name.to_s.gsub('=','')
-      ::Deploy::Config.send :attr_accessor, method_name.to_sym
-      self.send(:"#{method_name}=", *args)
+      ::Deploy::Config.send :attr_accessor, method_name.to_s.gsub('=', '').to_sym
+      self.send(:"#{method_name}", *args)
     end
   end
 end
