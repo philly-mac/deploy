@@ -4,11 +4,25 @@ APP_ROOT = "#{File.dirname(File.expand_path(__FILE__))}/.."
 
 $: << "#{APP_ROOT}/lib"
 
-recipe  = ARGV[0]
-env     = ARGV[1]
-command = ARGV[2]
+require 'optparse'
 
-exit if ARGV.size < 3
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: example.rb [options]"
+  opts.on("-r", "--recipe RECIPE", "The recipe file")             { |r| options[:recipe] = r      }
+  opts.on("-e", "--environment ENV", "Environment to execute in") { |e| options[:environment] = e }
+  opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method] = m      }
+  opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config] = c      }
+end.parse!
+
+[:recipe, :environment, :method].each do |param|
+  exit(1) unless options.keys.include?(param)
+end
+
+recipe = options[:recipe]
+env    = options[:environment]
+method = options[:method]
+config_file = options[:config]
 
 require "deploy/config"
 require "deploy/base"
@@ -19,9 +33,10 @@ c = ::Deploy::Config.new
 
 c.set :env, env
 c.config_environment
+c.config_custom(config_file) if config_file
 
 r = eval("::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}")
 
-r.send(command.to_sym, c)
+r.send(method.to_sym, c)
 
 r.push!

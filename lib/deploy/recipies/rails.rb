@@ -16,7 +16,7 @@ module Deploy
 
         def deploy(config)
           self.config = config
-#          get_code
+          #get_and_pack_code
           release_dir
           unpack
           #bundle
@@ -33,15 +33,15 @@ module Deploy
           mkdir "#{config.shared_path}/db"
           mkdir "#{config.shared_path}/system"
           mkdir "#{config.shared_path}/config"
-          mkdir "#{config.shared_path}/config/monit.d"
-          mkdir "#{config.shared_path}/config/hostapd.d"
-          mkdir "#{config.shared_path}/config/dnsmasq.d"
-          mkdir "#{config.shared_path}/config/ifconfig.d"
-          mkdir "#{config.shared_path}/solr/data"
-          mkdir "#{config.shared_path}/user-files", '0770'
           mkdir "#{config.shared_path}/pids", '0770'
-          mkdir "#{config.shared_path}/avatars", '0770'
           push!
+        end
+
+        def get_and_pack_code
+          system "cd #{config.local_root}"
+          system "git pull"
+          system "cd /tmp"
+          system "tar --exclude='.git' --exclude='log' -C #{config.local_root} -cjf #{config.app_name} ."
         end
 
         def setup_db
@@ -115,7 +115,7 @@ module Deploy
         end
 
         def restart
-          remote "touch #{config.shared_path}/tmp/restart.txt"
+          remote "touch #{config.current_path}/tmp/restart.txt"
           push!
         end
       end

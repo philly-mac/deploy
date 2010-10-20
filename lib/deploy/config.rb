@@ -3,7 +3,7 @@ module Deploy
     attr_accessor :env
     attr_accessor :user_name
     attr_accessor :deploy_root
-    attr_accessor :app_root
+    attr_accessor :app_name
     attr_accessor :remote
     attr_accessor :current_path
     attr_accessor :shared_path
@@ -11,14 +11,21 @@ module Deploy
 
     def initialize
       set :deploy_root,   "/var/www"
-      set :app_root,      "/test"
-      set :current_path,  "#{self.deploy_root}#{self.app_root}/current"
-      set :shared_path,   "#{self.deploy_root}#{self.app_root}/shared"
-      set :releases_path,  "#{self.deploy_root}#{self.app_root}/releases"
+      set :app_name,      "test"
+      set :current_path,  "#{self.deploy_root}/#{self.app_name}/current"
+      set :shared_path,   "#{self.deploy_root}/#{self.app_name}/shared"
+      set :releases_path,  "#{self.deploy_root}/#{self.app_name}/releases"
     end
 
     def config_environment
-      file = "#{APP_ROOT}/config/#{self.env}.rb"
+      load_config("#{APP_ROOT}/config/#{self.env}.rb")
+    end
+
+    def config_custom(file)
+      load_config(file)
+    end
+
+    def load_config(file)
       if File.exists?(file)
         file_contents = ""
         File.open(file, "r") do |infile|
