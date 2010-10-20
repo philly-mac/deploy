@@ -1,22 +1,23 @@
 module Deploy
   module Base
-    class << self
-      attr_accessor :remote_commands
+    attr_accessor :remote_commands
 
-      def remote(command)
-        self.remote_commands ||= []
-        self.remote_commands << command
-      end
+    def remote(command)
+      self.remote_commands ||= []
+      self.remote_commands << command
+    end
 
-      def push!
-        unless self.remote_commands.empty?
-          r_commands = self.remote_commands.map do |r_command|
-            puts "REMOTE: #{r_command}"
-            r_command
-          end.join(" && ")
+    def push!
+      unless self.remote_commands.empty?
+        r_commands = self.remote_commands.map do |r_command|
+          puts "REMOTE: #{r_command}"
+          r_command
+        end.join(" && ")
 
-          system "ssh #{config.user_name}@#{config.remote} #{r_commands}"
-        end
+        puts "PUSH! #{config.user_name}@#{config.remote} #{r_commands}\n\n\n"
+
+        # system "ssh #{config.user_name}@#{config.remote} #{r_commands}"
+        self.remote_commands = []
       end
     end
   end

@@ -38,9 +38,9 @@ module Deploy
           mkdir "#{config.shared_path}/config/dnsmasq.d"
           mkdir "#{config.shared_path}/config/ifconfig.d"
           mkdir "#{config.shared_path}/solr/data"
-          mkdir "#{config.shared_path}/user-files", '0770'
-          mkdir "#{config.shared_path}/pids", '0770'
-          mkdir "#{config.shared_path}/avatars", '0770'
+          mkdir "#{config.shared_path}/user-files", 0770
+          mkdir "#{config.shared_path}/pids", 0770
+          mkdir "#{config.shared_path}/avatars", 0770
           push!
         end
 

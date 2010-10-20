@@ -3,7 +3,7 @@ module Deploy
     def mkdir(dir_name, permissions = nil, remote = true)
       commands = [ "mkdir -p #{dir_name}" ]
       commands << "chmod #{permissions} #{dir_name}" if permissions
-      remote_or_return(remote)
+      remote_or_return(commands, remote)
     end
 
     def file_exists(file, remote = true)
@@ -22,7 +22,6 @@ module Deploy
     end
 
     def compile_commands(commands)
-      remote test
       all_commands = commands.map do |command|
         ret_command = ""
         if command.is_a?(Array)
@@ -33,11 +32,11 @@ module Deploy
         ret_command
       end
 
-      all_comands.join(" && ")
+      all_commands.join(" && ")
     end
 
-    def remote_or_return(remote)
-      if remote
+    def remote_or_return(commands, remote_command)
+      if remote_command
         commands.each{|c| remote c }
         return
       else
