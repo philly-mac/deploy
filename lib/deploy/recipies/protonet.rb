@@ -1,6 +1,4 @@
 require 'fileutils'
-require 'ruby-debug'
-Debugger.start
 
 module Deploy
   module Recipies
