@@ -14,7 +14,7 @@ module Deploy
       set :app_name,      "test"
       set :current_path,  "#{self.deploy_root}/#{self.app_name}/current"
       set :shared_path,   "#{self.deploy_root}/#{self.app_name}/shared"
-      set :releases_path,  "#{self.deploy_root}/#{self.app_name}/releases"
+      set :releases_path, "#{self.deploy_root}/#{self.app_name}/releases"
     end
 
     def config_environment

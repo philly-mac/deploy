@@ -1,6 +1,8 @@
+require 'fileutils'
+
 module Deploy
   module Recipies
-    class Rails
+    class Protonet
 
       extend ::Deploy::Base
       extend ::Deploy::RemoteCommands
@@ -8,7 +10,8 @@ module Deploy
       class << self
         attr_accessor :config
 
-        def first_run(config)
+
+        def setup(config)
           self.config = config
           create_directories
           setup_db
@@ -29,68 +32,70 @@ module Deploy
         private
 
         def create_directories
-          mkdir "#{config.shared_path}/log"
-          mkdir "#{config.shared_path}/db"
-          mkdir "#{config.shared_path}/system"
-          mkdir "#{config.shared_path}/config"
-          mkdir "#{config.shared_path}/config/monit.d"
-          mkdir "#{config.shared_path}/config/hostapd.d"
-          mkdir "#{config.shared_path}/config/dnsmasq.d"
-          mkdir "#{config.shared_path}/config/ifconfig.d"
-          mkdir "#{config.shared_path}/solr/data"
-          mkdir "#{config.shared_path}/user-files", 0770
-          mkdir "#{config.shared_path}/pids", 0770
-          mkdir "#{config.shared_path}/avatars", 0770
-          push!
+          create_directory "#{shared_path}/log"
+          create_directory "#{shared_path}/db"
+          create_directory "#{shared_path}/system"
+          create_directory "#{shared_path}/config"
+          create_directory "#{shared_path}/config/monit.d"
+          create_directory "#{shared_path}/config/hostapd.d"
+          create_directory "#{shared_path}/config/dnsmasq.d"
+          create_directory "#{shared_path}/config/ifconfig.d"
+          create_directory "#{shared_path}/solr/data"
+          create_directory "#{shared_path}/user-files", '0770'
+          create_directory "#{shared_path}/pids", '0770'
+          create_directory "#{shared_path}/avatars", '0770'
+        end
+
+        def create_directory(dir_name, permissions = nil)
+          FileUtils.mkdir_p dir_name
+          FileUtils.chmod permissions, dir_name if permissions
         end
 
         def setup_db
-          on_bad_exit "mysql -u root dashboard_production -e 'show tables;' 2>&1 > /dev/null",
-            [
-              "cd #{config.current_path}",
-              "RAILS_ENV=#{config.env} bundle exec rake db:setup"
-            ]
-          push!
+          FileUtils.cd current_path
+          system "mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null"
+          if $?.exitstatus != 0
+            system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
+          end
+        end
+
+        def get_code
+          FileUtils.cd "/tmp"
+          system "wget http://releases.protonet.info/latest/#{config.key}"
         end
 
         def release_dir
-          on_good_exit file_not_exists(config.shared_path, false),
-            [[:mkdir, ["#{config.shared_path}",nil,false]]]
-
-          on_good_exit file_not_exists(config.releases_path, false),
-            [[:mkdir, ["#{config.releases_path}",nil,false]]]
-          push!
+          FileUtils.mkdir_p shared_path if !File.exists? shared_path
+          FileUtils.mkdir_p releases_path if !File.exists? releases_path
         end
 
         def unpack
-          on_good_exit file_exists("/tmp/#{config.archive_name}#{config.packing_type}", false),
-            [
-              "cd /tmp ",
-              "tar -xzf #{config.archive_name}#{config.packing_type}",
-              "mv #{config.archive_name} #{config.release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
-            ]
-          push!
+          if File.exists?("/tmp/#{config.archive_name}#{config.packing_type}")
+            FileUtils.cd "/tmp"
+            system "tar -xzf #{config.archive_name}#{config.packing_type}"
+            FileUtils.mv config.archive_name, "#{release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+          end
         end
 
         def clean_up
-          all_releases = Dir["#{config.release_path}/*"].sort
-          if (num_releases = all_releases.size) > MAX_NUM_RELEASES
-            num_to_delete = num_releases - MAX_NUM_RELEASES
+          all_releases = Dir["#{release_path}/*"].sort
+          if (num_releases = all_releases.size) > config.max_num_releases
+            num_to_delete = num_releases - config.max_num_releases
 
             num_to_delete.times do
-              FileUtils.r_rf "#{config.release_path}/#{all_releases.delete_at(0)}"
+              FileUtils.r_rf "#{release_path}/#{all_releases.delete_at(0)}"
             end
           end
         end
 
         def bundle
-          shared_dir = File.join(config.shared_path, 'bundle')
-          release_dir = File.join(config.release_path, '.bundle')
+          shared_dir = File.join(shared_path, 'bundle')
+          release_dir = File.join(release_path, '.bundle')
 
           FileUtils.mkdir_p shared_dir
           FileUtils.ln_s shared_dir, release_dir
 
-          FileUtils.cd config.release_path
+          FileUtils.cd release_path
 
           system "bundle check 2>&1 > /dev/null"
 
@@ -100,19 +105,17 @@ module Deploy
         end
 
         def migrate
-          FileUtils.cd config.current_path
-          system "RAILS_ENV=#{config.env} rake db:migrate"
+          FileUtils.cd current_path
+          system "RAILS_ENV=#{env} rake db:migrate"
         end
 
         def link
-          remote "rm #{config.current_path}"
-          remote "ln -s #{lateset_deploy} #{config.current_path}"
-          push!
+          FileUtils.rm current_path
+          FileUtils.ln_s latest_deploy, current_path
         end
 
         def restart
-          remote "touch #{config.current_path}/tmp/restart.txt"
-          push!
+          FileUtils.touch "#{current_path}/tmp/restart.txt"
         end
       end
     end
