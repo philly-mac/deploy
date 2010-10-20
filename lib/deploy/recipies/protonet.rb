@@ -61,7 +61,8 @@ module Deploy
 
         def get_code
           FileUtils.cd "/tmp"
-          system "rm -f /tmp/release.tar.gz"
+          # readd after tests
+          # system "rm -f /tmp/release.tar.gz"
           system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
         end
 
@@ -74,7 +75,8 @@ module Deploy
           if File.exists?("/tmp/release.tar.gz")
             FileUtils.cd "/tmp"
             system "tar -xzf #{"/tmp/release.tar.gz"}"
-            FileUtils.mv config.archive_name, "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+            
+            FileUtils.mv "/tmp/dashboard/*", "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
           end
         end
 
