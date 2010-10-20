@@ -63,7 +63,8 @@ module Deploy
           FileUtils.cd "/tmp"
           # readd after tests
           # system "rm -f /tmp/release.tar.gz"
-          system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
+          # system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
+          unpack
         end
 
         def release_dir
