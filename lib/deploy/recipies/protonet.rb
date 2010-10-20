@@ -32,8 +32,8 @@ module Deploy
         private
 
         def create_directories
-          create_directory "#{config.current_path}"
-          create_directory "#{config.release_path}"
+          create_directory config.current_path
+          create_directory config.releases_path
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
           create_directory "#{config.shared_path}/system"
