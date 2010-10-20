@@ -51,18 +51,18 @@ module Deploy
         end
 
         def setup_db
-          FileUtils.cd config.current_path
-          system "mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null"
-          if $?.exitstatus != 0
-            system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
+          FileUtils.cd config.current_path do
+            system "mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null"
+            if $?.exitstatus != 0
+              system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
+            end
           end
         end
 
         def get_code
           FileUtils.cd "/tmp" do
-            system "wget http://releases.protonet.info/latest/#{config.key} -O release.tar.gz"
+            system "wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz" && unpack
           end
-          unpack
         end
 
         def release_dir
