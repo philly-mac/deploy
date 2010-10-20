@@ -41,9 +41,9 @@ module Deploy
           create_directory "#{config.shared_path}/config/dnsmasq.d"
           create_directory "#{config.shared_path}/config/ifconfig.d"
           create_directory "#{config.shared_path}/solr/data"
-          create_directory "#{config.shared_path}/user-files", '0770'
-          create_directory "#{config.shared_path}/pids", '0770'
-          create_directory "#{config.shared_path}/avatars", '0770'
+          create_directory "#{config.shared_path}/user-files", 0770
+          create_directory "#{config.shared_path}/pids", 0770
+          create_directory "#{config.shared_path}/avatars", 0770
         end
 
         def create_directory(dir_name, permissions = nil)
