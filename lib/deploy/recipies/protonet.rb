@@ -115,7 +115,7 @@ module Deploy
         end
 
         def link
-          FileUtils.rm config.current_path
+          FileUtils.rm_f config.current_path
           FileUtils.ln_s config.latest_deploy, config.current_path
         end
 
