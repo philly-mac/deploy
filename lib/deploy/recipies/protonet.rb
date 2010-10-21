@@ -13,23 +13,21 @@ module Deploy
 
         def setup(config)
           self.config = config
-          create_directories
-          get_code
+          prepare_code
           setup_db
         end
-
+        
         def deploy(config)
           self.config = config
-          get_code
+          prepare_code
           bundle
           migrate
           clean_up
-          link
+          link_current
           restart
         end
 
         private
-
         def create_directories
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
@@ -43,6 +41,17 @@ module Deploy
           create_directory "#{config.shared_path}/user-files", 0770
           create_directory "#{config.shared_path}/pids", 0770
           create_directory "#{config.shared_path}/avatars", 0770
+        end
+
+        def link_shared_directories
+          FileUtils.rm_rf   "#{latest_deploy}/log"
+          FileUtils.rm_rf   "#{latest_deploy}/public/system"
+          FileUtils.rm_rf   "#{latest_deploy}/tmp/pids"
+          FileUtils.mkdir_p "#{latest_deploy}/public"
+          FileUtils.mkdir_p "#{latest_deploy}/tmp"
+          FileUtils.ln_s    "#{config.shared_path}/log",    "#{latest_deploy}/log"
+          FileUtils.ln_s    "#{config.shared_path}/system", "#{latest_deploy}/system"
+          FileUtils.ln_s    "#{config.shared_path}/pids",   "#{latest_deploy}/pids"
         end
 
         def create_directory(dir_name, permissions = nil)
@@ -59,12 +68,16 @@ module Deploy
           end
         end
 
-        def get_code
+        def prepare_code
+          create_directories
+          get_code_and_unpack
+          link_shared_directories
+        end
+        
+        def get_code_and_unpack
           FileUtils.cd "/tmp"
-          # readd after tests
-          #system "rm -f /tmp/release.tar.gz"
-          #system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
-          unpack
+          system "rm -f /tmp/release.tar.gz"
+          system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
         end
 
         def release_dir
@@ -115,7 +128,7 @@ module Deploy
           system "RAILS_ENV=#{config.env} rake db:migrate"
         end
 
-        def link
+        def link_current
           FileUtils.rm_f config.current_path
           FileUtils.ln_s latest_deploy, config.current_path
         end
