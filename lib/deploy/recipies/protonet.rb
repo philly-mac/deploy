@@ -95,12 +95,12 @@ module Deploy
 
         def bundle
           shared_dir = File.join(config.shared_path, 'bundle')
-          release_dir = File.join(config.releases_path, '.bundle')
+          release_dir = File.join(latest_deploy, '.bundle')
 
           FileUtils.mkdir_p shared_dir
           FileUtils.ln_s shared_dir, release_dir
 
-          FileUtils.cd config.releases_path
+          FileUtils.cd latest_deploy
 
           system "bundle check 2>&1 > /dev/null"
 
