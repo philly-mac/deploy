@@ -98,7 +98,7 @@ module Deploy
           release_dir = File.join(latest_deploy, '.bundle')
 
           FileUtils.mkdir_p shared_dir
-          FileUtils.ln_s shared_dir, release_dir
+          FileUtils.ln_s release_dir, shared_dir
 
           FileUtils.cd latest_deploy
 
