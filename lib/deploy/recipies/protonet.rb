@@ -88,7 +88,7 @@ module Deploy
             num_to_delete = num_releases - config.max_num_releases
 
             num_to_delete.times do
-              FileUtils.r_rf "#{config.releases_path}/#{all_releases.delete_at(0)}"
+              FileUtils.rm_rf "#{config.releases_path}/#{all_releases.delete_at(0)}"
             end
           end
         end
