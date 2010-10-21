@@ -62,8 +62,8 @@ module Deploy
         def get_code
           FileUtils.cd "/tmp"
           # readd after tests
-          system "rm -f /tmp/release.tar.gz"
-          system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
+          #system "rm -f /tmp/release.tar.gz"
+          #system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
           unpack
         end
 
@@ -75,6 +75,7 @@ module Deploy
           release_dir
           if File.exists?("/tmp/release.tar.gz")
             FileUtils.cd "/tmp"
+            FileUtils.rm_rf "/tmp/dashboard"
             system "tar -xzf #{"/tmp/release.tar.gz"}"
             release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
             FileUtils.mkdir_p release_timestamp
