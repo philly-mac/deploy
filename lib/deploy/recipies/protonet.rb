@@ -95,8 +95,8 @@ module Deploy
         end
 
         def bundle
-          shared_dir = File.join(config.shared_path, 'bundle')
-          release_dir = File.join(latest_deploy, '.bundle')
+          shared_dir  = File.expand_path('bundle', config.shared_path)
+          release_dir = File.expand_path('.bundle', latest_deploy)
 
           FileUtils.mkdir_p shared_dir
           FileUtils.ln_s release_dir, shared_dir
