@@ -63,6 +63,7 @@ module Deploy
           FileUtils.cd latest_deploy do
             db_exists = system("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
             if !db_exists
+              puts 'db not found, creating'
               system "RAILS_ENV=#{config.env} bundle exec rake db:setup"
             end
           end
