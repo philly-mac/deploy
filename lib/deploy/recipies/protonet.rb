@@ -14,6 +14,7 @@ module Deploy
         def setup(config)
           self.config = config
           prepare_code
+          bundle
           setup_db
         end
         
