@@ -99,7 +99,7 @@ module Deploy
           release_dir = File.expand_path('.bundle', latest_deploy)
 
           FileUtils.mkdir_p shared_dir
-          FileUtils.ln_s release_dir, shared_dir
+          FileUtils.ln_s shared_dir, release_dir
 
           FileUtils.cd latest_deploy
 
@@ -117,11 +117,11 @@ module Deploy
 
         def link
           FileUtils.rm_f config.current_path
-          FileUtils.ln_s config.latest_deploy, config.current_path
+          FileUtils.ln_s latest_deploy, config.current_path
         end
 
         def restart
-          FileUtils.touch "#{current_path}/tmp/restart.txt"
+          FileUtils.touch "#{config.current_path}/tmp/restart.txt"
         end
         
         def latest_deploy
