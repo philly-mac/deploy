@@ -64,7 +64,6 @@ module Deploy
           FileUtils.cd latest_deploy do
             db_exists = system("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
             if !db_exists
-              puts "system(\"RAILS_ENV=#{config.env} bundle exec rake db:setup\""
               puts "db not found, creating: #{ system("export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
             end
           end
@@ -97,7 +96,7 @@ module Deploy
             system "mv /tmp/dashboard/* #{release_timestamp}"
           end
         end
-
+        
         def clean_up
           all_releases = Dir["#{config.releases_path}/*"].sort
           if (num_releases = all_releases.size) > config.max_num_releases
@@ -127,7 +126,7 @@ module Deploy
 
         def migrate
           FileUtils.cd latest_deploy
-          system "RAILS_ENV=#{config.env} bundle exec rake db:migrate"
+          system "export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
         end
 
         def link_current
