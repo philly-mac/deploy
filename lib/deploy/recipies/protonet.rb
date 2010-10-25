@@ -16,6 +16,8 @@ module Deploy
           prepare_code
           bundle
           setup_db
+          link_current
+          restart
         end
         
         def deploy(config)
