@@ -17,6 +17,7 @@ module Deploy
           bundle
           setup_db
           link_current
+          deploy_monit
           restart
         end
         
@@ -25,12 +26,37 @@ module Deploy
           prepare_code
           bundle
           migrate
+          # copy_stage_config
           clean_up
           link_current
+          deploy_monit
           restart
         end
 
         private
+        
+        def deploy_monit
+          # variables for erb
+          shared_path   = config.shared_path
+          current_path  = latest_deploy
+          monit_command = "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
+
+          File.open("#{shared_path}/config/monit_ptn_node", 'w') do |f| 
+            f.write(StringIO.new(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding)))
+          end
+
+          system "chmod 700 #{shared_path}/config/monit_ptn_node"
+
+          # and restart monit
+          system monit_command + " quit"
+          sleep 2
+          system monit_command
+        end
+        
+        def copy_stage_config
+          run "if [ -f #{release_path}/config/stage_configs/#{stage}.rb ]; then cp #{release_path}/config/stage_configs/#{stage}.rb #{release_path}/config/environments/stage.rb; fi"
+        end
+        
         def create_directories
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
