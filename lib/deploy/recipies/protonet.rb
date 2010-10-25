@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'erb'
 
 module Deploy
   module Recipies
