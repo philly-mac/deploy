@@ -127,7 +127,7 @@ module Deploy
 
         def migrate
           FileUtils.cd latest_deploy
-          system "RAILS_ENV=#{config.env} rake db:migrate"
+          system "RAILS_ENV=#{config.env} bundle exec rake db:migrate"
         end
 
         def link_current
