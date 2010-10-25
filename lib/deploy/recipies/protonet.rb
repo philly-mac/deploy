@@ -65,7 +65,7 @@ module Deploy
             db_exists = system("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
             if !db_exists
               puts "system(\"RAILS_ENV=#{config.env} bundle exec rake db:setup\""
-              puts "db not found, creating: #{ system("RAILS_ENV=#{config.env} bundle exec rake db:setup") ? "success!" : "FAIL!"}"
+              puts "db not found, creating: #{ system("export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
             end
           end
         end
