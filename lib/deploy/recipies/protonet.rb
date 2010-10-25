@@ -42,7 +42,7 @@ module Deploy
           monit_command = "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
 
           File.open("#{shared_path}/config/monit_ptn_node", 'w') do |f| 
-            f.write(StringIO.new(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding)))
+            f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
           end
 
           system "chmod 700 #{shared_path}/config/monit_ptn_node"
