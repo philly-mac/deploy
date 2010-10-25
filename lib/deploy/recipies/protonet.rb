@@ -39,7 +39,7 @@ module Deploy
         def deploy_monit
           # variables for erb
           shared_path   = config.shared_path
-          current_path  = latest_deploy
+          current_path  = config.current_path
           monit_command = "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
 
           File.open("#{shared_path}/config/monit_ptn_node", 'w') do |f| 
@@ -80,8 +80,8 @@ module Deploy
           FileUtils.mkdir_p "#{latest_deploy}/public"
           FileUtils.mkdir_p "#{latest_deploy}/tmp"
           FileUtils.ln_s    "#{config.shared_path}/log",    "#{latest_deploy}/log"
-          FileUtils.ln_s    "#{config.shared_path}/system", "#{latest_deploy}/system"
-          FileUtils.ln_s    "#{config.shared_path}/pids",   "#{latest_deploy}/pids"
+          FileUtils.ln_s    "#{config.shared_path}/system", "#{latest_deploy}/public/system"
+          FileUtils.ln_s    "#{config.shared_path}/pids",   "#{latest_deploy}/tmp/pids"
         end
 
         def create_directory(dir_name, permissions = nil)
