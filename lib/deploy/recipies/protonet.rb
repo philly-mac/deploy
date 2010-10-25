@@ -128,7 +128,7 @@ module Deploy
         
         def clean_up
           all_releases = Dir["#{config.releases_path}/*"].sort
-          if (num_releases = all_releases.size) > config.max_num_releases
+          if (num_releases = all_releases.size) >= config.max_num_releases
             num_to_delete = num_releases - config.max_num_releases
 
             num_to_delete.times do
