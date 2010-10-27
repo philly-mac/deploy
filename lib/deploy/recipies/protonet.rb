@@ -15,6 +15,7 @@ module Deploy
         def setup(config)
           self.config = config
           prepare_code
+          move_config_to_shared
           bundle
           setup_db
           link_current
@@ -54,6 +55,7 @@ module Deploy
           system monit_command
         end
         
+        # todo: replace by app configuration & remove
         def copy_stage_config
           run "if [ -f #{release_path}/config/stage_configs/#{stage}.rb ]; then cp #{release_path}/config/stage_configs/#{stage}.rb #{release_path}/config/environments/stage.rb; fi"
         end
@@ -67,6 +69,7 @@ module Deploy
           create_directory "#{config.shared_path}/config/hostapd.d"
           create_directory "#{config.shared_path}/config/dnsmasq.d"
           create_directory "#{config.shared_path}/config/ifconfig.d"
+          create_directory "#{config.shared_path}/config/protonet.d"
           create_directory "#{config.shared_path}/solr/data"
           create_directory "#{config.shared_path}/user-files", 0770
           create_directory "#{config.shared_path}/pids", 0770
@@ -87,6 +90,10 @@ module Deploy
         def create_directory(dir_name, permissions = nil)
           FileUtils.mkdir_p dir_name
           FileUtils.chmod permissions, dir_name if permissions
+        end
+        
+        def move_config_to_shared
+          system("mv ~/deploy_config #{config.shared_path}/config/protonet.d/deploy_config")
         end
 
         def setup_db
