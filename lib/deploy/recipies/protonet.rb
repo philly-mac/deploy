@@ -33,7 +33,7 @@ module Deploy
           deploy_monit
           restart
         end
-
+        
         private
         
         def deploy_monit
@@ -106,8 +106,8 @@ module Deploy
         
         def get_code_and_unpack
           FileUtils.cd "/tmp"
-          system "rm -f /tmp/release.tar.gz"
-          system("wget http://cd.ivercore.com/latest/#{config.key} -O release.tar.gz") && unpack
+          system "rm -f /tmp/dashboard.tar.gz"
+          system("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
         end
 
         def release_dir
@@ -116,10 +116,10 @@ module Deploy
 
         def unpack
           release_dir
-          if File.exists?("/tmp/release.tar.gz")
+          if File.exists?("/tmp/dashboard.tar.gz")
             FileUtils.cd "/tmp"
             FileUtils.rm_rf "/tmp/dashboard"
-            system "tar -xzf #{"/tmp/release.tar.gz"}"
+            system "tar -xzf #{"/tmp/dashboard.tar.gz"}"
             release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
             FileUtils.mkdir_p release_timestamp
             system "mv /tmp/dashboard/* #{release_timestamp}"
