@@ -20,7 +20,8 @@ module Deploy
           setup_db
           link_current
           deploy_monit
-          restart
+          restart_services
+          restart_apache
         end
         
         def deploy(config)
@@ -32,16 +33,19 @@ module Deploy
           clean_up
           link_current
           deploy_monit
-          restart
+          restart_apache
         end
         
         private
+        
+        def monit_command
+          "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
+        end
         
         def deploy_monit
           # variables for erb
           shared_path   = config.shared_path
           current_path  = config.current_path
-          monit_command = "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
 
           File.open("#{shared_path}/config/monit_ptn_node", 'w') do |f| 
             f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
@@ -170,8 +174,12 @@ module Deploy
           FileUtils.ln_s latest_deploy, config.current_path
         end
 
-        def restart
+        def restart_apache
           FileUtils.touch "#{config.current_path}/tmp/restart.txt"
+        end
+        
+        def restart_services
+          system monit_command + " -g daemons restart all"
         end
         
         def latest_deploy
