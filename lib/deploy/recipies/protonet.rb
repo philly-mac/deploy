@@ -39,7 +39,7 @@ module Deploy
         private
         
         def monit_command
-          "monit -c #{shared_path}/config/monit_ptn_node -l #{shared_path}/log/monit.log -p #{shared_path}/pids/monit.pid"
+          "monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid"
         end
         
         def deploy_monit
@@ -47,11 +47,11 @@ module Deploy
           shared_path   = config.shared_path
           current_path  = config.current_path
 
-          File.open("#{shared_path}/config/monit_ptn_node", 'w') do |f| 
+          File.open("#{config.shared_path}/config/monit_ptn_node", 'w') do |f| 
             f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
           end
 
-          system "chmod 700 #{shared_path}/config/monit_ptn_node"
+          system "chmod 700 #{config.shared_path}/config/monit_ptn_node"
 
           # and restart monit
           system monit_command + " quit"
