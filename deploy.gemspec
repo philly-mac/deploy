@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/philly-mac/deploy"
   s.summary     = %q{Deployment made more plain}
   s.description = %q{Deployment made more plain}
-  s.date    = Date.today.to_s
+  s.date        = Date.today.to_s
 
   s.rubyforge_project = "deploy"
 
