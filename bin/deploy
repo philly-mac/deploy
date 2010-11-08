@@ -7,16 +7,21 @@ $: << "#{APP_ROOT}/lib"
 require 'optparse'
 
 options = {}
-OptionParser.new do |opts|
+op = OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
   opts.on("-r", "--recipe RECIPE", "The recipe file")             { |r| options[:recipe] = r      }
   opts.on("-e", "--environment ENV", "Environment to execute in") { |e| options[:environment] = e }
   opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method] = m      }
   opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config] = c      }
-end.parse!
+end
+
+op.parse!
 
 [:recipe, :environment, :method].each do |param|
-  exit(1) unless options.keys.include?(param)
+  unless options.keys.include?(param)
+    puts op.summarize
+    exit(1)
+  end
 end
 
 recipe = options[:recipe]
@@ -31,6 +36,8 @@ require "deploy/recipies/#{recipe}"
 
 c = ::Deploy::Config.new
 
+puts "THIS FILE IS #{File.expand_path(File.new(".").path)}"
+
 c.set :env, env
 c.config_environment
 c.config_custom(config_file) if config_file
@@ -40,3 +47,4 @@ r = eval("::Deploy::Recipies::#{recipe[0,1].upcase}#{recipe[1,recipe.size - 1]}"
 r.send(method.to_sym, c)
 
 r.push!
+

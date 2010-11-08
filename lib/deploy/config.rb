@@ -23,6 +23,7 @@ module Deploy
 
     def config_environment
       load_config("#{APP_ROOT}/config/#{self.env}.rb")
+      load_config("#{File.expand_path(File.new(".").path)}/deploy/#{self.env}.rb")
     end
 
     def config_custom(file)
