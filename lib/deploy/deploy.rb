@@ -6,7 +6,7 @@ module Deploy
         [:recipe, :environment, :method].each do |param|
           unless options.keys.include?(param)
             puts summary
-            exit(1)
+            return 1
           end
         end
 
@@ -42,6 +42,8 @@ module Deploy
           r.send(method.to_sym, c)
           r.push!
         end
+
+        return 0
       end
     end
   end

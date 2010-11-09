@@ -27,5 +27,5 @@ op = OptionParser.new do |opts|
 end
 op.parse!
 
-::Deploy::Deploy.init(options, op.summarize)
+exit ::Deploy::Deploy.init(options, op.summarize)
 
