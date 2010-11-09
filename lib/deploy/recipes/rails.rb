@@ -1,5 +1,5 @@
 module Deploy
-  module Recipies
+  module Recipes
     class Rails
 
       extend ::Deploy::Base
@@ -122,3 +122,4 @@ module Deploy
     end
   end
 end
+

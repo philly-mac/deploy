@@ -1,10 +1,14 @@
-require 'sham'
-require 'ffaker'
+APP_ROOT = "#{File.dirname(File.expand_path(__FILE__))}/.."
+$: << "#{APP_ROOT}/lib"
 
-require 'rack/test'
-# require 'rack/flash/test'
+require "deploy/config"
+require "deploy/base"
+require "deploy/remote_commands"
+require "deploy/utils"
+#require 'sham'
+#require 'ffaker'
 
-require File.dirname(__FILE__) + "/blueprints"
+#require File.dirname(__FILE__) + "/blueprints"
 
 
 # Bacon.extend(Bacon.const_get("KnockOutput"))

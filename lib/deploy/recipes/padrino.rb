@@ -1,5 +1,5 @@
 module Deploy
-  module Recipies
+  module Recipes
     class Padrino
 
       extend ::Deploy::Base

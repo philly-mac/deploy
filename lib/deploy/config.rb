@@ -22,8 +22,7 @@ module Deploy
     end
 
     def config_environment
-      load_config("#{APP_ROOT}/config/#{self.env}.rb")
-      load_config("#{File.expand_path(File.new(".").path)}/deploy/#{self.env}.rb")
+      load_config("#{VIRTUAL_APP_ROOT}/deploy/environments/#{self.env}.rb")
     end
 
     def config_custom(file)
@@ -31,7 +30,7 @@ module Deploy
     end
 
     def load_config(file)
-      puts "Trying to load #{file}"
+#      puts "Trying to load #{file}"
       if File.exists?(file)
         file_contents = ""
         File.open(file, "r") do |infile|

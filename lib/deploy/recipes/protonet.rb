@@ -2,7 +2,7 @@ require 'fileutils'
 require 'erb'
 
 module Deploy
-  module Recipies
+  module Recipes
     class Protonet
 
       extend ::Deploy::Base
@@ -23,7 +23,7 @@ module Deploy
           restart_services
           restart_apache
         end
-        
+
         def deploy(config)
           self.config = config
           prepare_code
@@ -35,19 +35,19 @@ module Deploy
           deploy_monit
           restart_apache
         end
-        
+
         private
-        
+
         def monit_command
           "monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid"
         end
-        
+
         def deploy_monit
           # variables for erb
           shared_path   = config.shared_path
           current_path  = config.current_path
 
-          File.open("#{config.shared_path}/config/monit_ptn_node", 'w') do |f| 
+          File.open("#{config.shared_path}/config/monit_ptn_node", 'w') do |f|
             f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
           end
 
@@ -58,12 +58,12 @@ module Deploy
           sleep 2
           system monit_command
         end
-        
+
         # todo: replace by app configuration & remove
         def copy_stage_config
           run "if [ -f #{release_path}/config/stage_configs/#{stage}.rb ]; then cp #{release_path}/config/stage_configs/#{stage}.rb #{release_path}/config/environments/stage.rb; fi"
         end
-        
+
         def create_directories
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
@@ -95,7 +95,7 @@ module Deploy
           FileUtils.mkdir_p dir_name
           FileUtils.chmod permissions, dir_name if permissions
         end
-        
+
         def move_config_to_shared
           system("mv ~/deploy_config #{config.shared_path}/config/protonet.d/deploy_config")
         end
@@ -114,7 +114,7 @@ module Deploy
           get_code_and_unpack
           link_shared_directories
         end
-        
+
         def get_code_and_unpack
           FileUtils.cd "/tmp"
           system "rm -f /tmp/dashboard.tar.gz"
@@ -136,7 +136,7 @@ module Deploy
             system "mv /tmp/dashboard/* #{release_timestamp}"
           end
         end
-        
+
         def clean_up
           all_releases = Dir["#{config.releases_path}/*"].sort
           if (num_releases = all_releases.size) >= config.max_num_releases
@@ -177,15 +177,15 @@ module Deploy
         def restart_apache
           FileUtils.touch "#{config.current_path}/tmp/restart.txt"
         end
-        
+
         def restart_services
           system monit_command + " -g daemons restart all"
         end
-        
+
         def latest_deploy
           Dir["#{config.releases_path}/*"].sort.last
         end
-        
+
       end
     end
   end
