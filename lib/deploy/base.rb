@@ -1,7 +1,7 @@
 module Deploy
   module Base
     attr_accessor :remote_commands
-    
+
     def remote_commands
       @remote_commands ||= []
     end
@@ -17,7 +17,7 @@ module Deploy
           r_command
         end.join("; ")
 
-        puts "PUSH! ssh #{config.user_name}@#{config.remote} #{r_commands}\n\n\n"
+        puts "PUSH! ssh #{config.username}@#{config.remote} #{r_commands}\n\n\n"
 
         # system "ssh #{config.user_name}@#{config.remote} #{r_commands}"
         self.remote_commands = []
@@ -25,3 +25,4 @@ module Deploy
     end
   end
 end
+

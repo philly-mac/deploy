@@ -16,13 +16,13 @@ module Deploy
 
         def deploy(config)
           self.config = config
-          #get_and_pack_code
-          release_dir
+          get_and_pack_code
+          push_code
           unpack
-          #bundle
-          migrate
-          clean_up
           link
+          bundle
+          auto_upgrade
+          clean_up
           restart
         end
 
@@ -30,22 +30,25 @@ module Deploy
 
         def create_directories
           mkdir "#{config.shared_path}/log"
-          mkdir "#{config.shared_path}/db"
-          mkdir "#{config.shared_path}/system"
           mkdir "#{config.shared_path}/config"
-          mkdir "#{config.shared_path}/pids", '0770'
+          mkdir "#{config.shared_path}/vendor"
+          mkdir "#{config.shared_path}/tmp"
+          mkdir "#{config.releases_path}"
           push!
         end
 
         def get_and_pack_code
           system "cd #{config.local_root}"
           system "git pull"
-          system "cd /tmp"
-          system "tar --exclude='.git' --exclude='log' -C #{config.local_root} -cjf #{config.app_name} ."
+          system "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
+        end
+
+        def push_code
+          system "rsync /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
         end
 
         def setup_db
-          on_bad_exit "mysql -u root #{config.database} -e 'show tables;' 2>&1 > /dev/null",
+          on_bad_exit "mysql -u root -p #{config.database_password} #{config.database} -e 'show tables;' 2>&1 > /dev/null",
             [
               "cd #{config.current_path}",
               "PADRINO_ENV=#{config.env} bundle exec rake db:setup"
@@ -53,23 +56,32 @@ module Deploy
           push!
         end
 
-        def release_dir
-          on_good_exit file_not_exists(config.shared_path, false),
-            [[:mkdir, ["#{config.shared_path}",nil,false]]]
-
-          on_good_exit file_not_exists(config.releases_path, false),
-            [[:mkdir, ["#{config.releases_path}",nil,false]]]
+        def unpack
+          release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
+          on_good_exit file_exists("/tmp/#{config.app_name}.tar.bz2", false),
+            [
+              "cd #{config.releases_path}",
+              "mkdir #{release_stamp}",
+              "cd #{release_stamp}",
+              "tar -xjf /tmp/#{config.app_name}.tar.bz2",
+            ]
           push!
         end
 
-        def unpack
-          on_good_exit file_exists("/tmp/#{config.archive_name}#{config.packing_type}", false),
-            [
-              "cd /tmp ",
-              "tar -xzf #{config.archive_name}#{config.packing_type}",
-              "mv #{config.archive_name} #{config.release_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
-            ]
+        def link
+          remote "cd #{config.releases_path}"
+          remote "rm #{config.current_path}"
+          remote "for i in $( ls -rl -m1 ); do LATEST_RELEASE=$i; break; done"
+          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
+          remote "ln -s #{config.shared_path}/log $LATEST_RELEASE/log"
+          remote "ln -s #{config.shared_path}/vendor $LATEST_RELEASE/vendor"
+          remote "ln -s #{config.shared_path}/tmp $LATEST_RELEASE/tmp"
           push!
+        end
+
+        def bundle
+          remote "cd #{config.current_path}"
+          remote "bundle install --without test --deployment"
         end
 
         def clean_up
@@ -84,33 +96,15 @@ module Deploy
           push!
         end
 
-        def bundle
-          shared_dir = File.join(config.shared_path, 'bundle')
-          release_dir = File.join(config.release_path, '.bundle')
-
-          FileUtils.mkdir_p shared_dir
-          FileUtils.ln_s shared_dir, release_dir
-
-          FileUtils.cd config.release_path
-
-          system "bundle check 2>&1 > /dev/null"
-
-          if $?.exitstatus != 0
-            system "bundle install --without test --without cucumber"
-          end
-        end
-
-        def migrate
+        def auto_upgrade
           remote "cd #{config.current_path}"
-          remote "RAILS_ENV=#{config.env} rake db:migrate"
+          remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:upgrade"
           push!
         end
 
-        def link
-          remote "cd #{config.releases_path}"
-          remote "rm #{config.current_path}"
-          remote "for i in $( ls -rl -m1 ); do LATEST_RELEASE=$i; break; done"
-          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
+        def auto_migrate
+          remote "cd #{config.current_path}"
+          remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:migrate"
           push!
         end
 

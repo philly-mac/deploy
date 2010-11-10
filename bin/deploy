@@ -24,6 +24,8 @@ op = OptionParser.new do |opts|
   opts.on("-e", "--environment ENV", "Environment to execute in") { |e| options[:environment] = e }
   opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method]      = m }
   opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config]      = c }
+  opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
+  opts.on("-v", "--verbose", "More noise")                        { |v| options[:verbose]     = v }
 end
 op.parse!
 

@@ -30,7 +30,6 @@ module Deploy
     end
 
     def load_config(file)
-#      puts "Trying to load #{file}"
       if File.exists?(file)
         file_contents = ""
         File.open(file, "r") do |infile|
