@@ -38,13 +38,13 @@ module Deploy
         end
 
         def get_and_pack_code
-          system "cd #{config.local_root}"
-          system "git pull"
-          system "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
+          local "cd #{config.local_root}"
+          local "git pull"
+          local "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
         end
 
         def push_code
-          system "rsync /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
+          local "rsync /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
         end
 
         def setup_db

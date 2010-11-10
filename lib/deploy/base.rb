@@ -10,16 +10,21 @@ module Deploy
       self.remote_commands << command
     end
 
+    def local(command)
+      puts "#{command}" if ::Deploy::Deploy.verbose
+      system command unless ::Deploy::Deploy.dry_run
+    end
+
     def push!
       unless self.remote_commands.empty?
         r_commands = self.remote_commands.map do |r_command|
-          puts "REMOTE: #{r_command}"
+          puts "REMOTE: #{r_command}" if ::Deploy::Deploy.verbose
           r_command
         end.join("; ")
 
-        puts "PUSH! ssh #{config.username}@#{config.remote} #{r_commands}\n\n\n"
+        puts "PUSH! ssh #{config.username}@#{config.remote} #{r_commands}\n\n\n" if ::Deploy::Deploy.verbose
 
-        # system "ssh #{config.user_name}@#{config.remote} #{r_commands}"
+        system "ssh #{config.user_name}@#{config.remote} #{r_commands}" unless ::Deploy::Deploy.dry_run
         self.remote_commands = []
       end
     end

@@ -1,6 +1,10 @@
 module Deploy
   class Deploy
+
     class << self
+      attr_accessor :dry_run
+      attr_accessor :verbose
+
       def init(options, summary)
         # Check whether we have the minimum set of options
         [:recipe, :environment, :method].each do |param|
@@ -11,10 +15,12 @@ module Deploy
         end
 
         # Assaign the parsed options to local variables
-        recipe      = options[:recipe]
-        env         = options[:environment]
-        method      = options[:method]
-        config_file = options[:config]
+        recipe       = options[:recipe]
+        env          = options[:environment]
+        method       = options[:method]
+        config_file  = options[:config]
+        self.dry_run = options[:dry]
+        self.verbose = options[:verbose]
 
         # Set the configuration options
         c = ::Deploy::Config.new
