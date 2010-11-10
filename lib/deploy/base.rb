@@ -11,7 +11,7 @@ module Deploy
     end
 
     def local(command)
-      puts "#{command}" if ::Deploy::Deploy.verbose
+      puts "LOCAL: #{command}" if ::Deploy::Deploy.verbose
       system command unless ::Deploy::Deploy.dry_run
     end
 
@@ -21,10 +21,8 @@ module Deploy
           puts "REMOTE: #{r_command}" if ::Deploy::Deploy.verbose
           r_command
         end.join("; ")
-
-        puts "PUSH! ssh #{config.username}@#{config.remote} #{r_commands}\n\n\n" if ::Deploy::Deploy.verbose
-
-        system "ssh #{config.user_name}@#{config.remote} #{r_commands}" unless ::Deploy::Deploy.dry_run
+        local "ssh #{config.user_name}@#{config.remote} #{r_commands}"
+        puts "\n"
         self.remote_commands = []
       end
     end
