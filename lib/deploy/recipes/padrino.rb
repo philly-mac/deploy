@@ -72,10 +72,10 @@ module Deploy
           remote "cd #{config.releases_path}"
           remote "rm #{config.current_path}"
           remote "for i in $( ls -rl -m1 ); do LATEST_RELEASE=$i; break; done"
-          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
-          remote "ln -s #{config.shared_path}/log $LATEST_RELEASE/log"
-          remote "ln -s #{config.shared_path}/vendor $LATEST_RELEASE/vendor"
-          remote "ln -s #{config.shared_path}/tmp $LATEST_RELEASE/tmp"
+          remote "ln -s \"#{config.releases_path}/$LATEST_RELEASE #{config.current_path}\""
+          remote "ln -s \"#{config.shared_path}/log $LATEST_RELEASE/log\""
+          remote "ln -s \"#{config.shared_path}/vendor $LATEST_RELEASE/vendor\""
+          remote "ln -s \"#{config.shared_path}/tmp $LATEST_RELEASE/tmp\""
           push!
         end
 
