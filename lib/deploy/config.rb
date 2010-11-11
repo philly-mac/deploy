@@ -16,9 +16,10 @@ module Deploy
     end
 
     def set_paths!
-      set :current_path,  "#{self.deploy_root}/#{self.app_name}/current"
-      set :shared_path,   "#{self.deploy_root}/#{self.app_name}/shared"
-      set :releases_path, "#{self.deploy_root}/#{self.app_name}/releases"
+      set :app_root,      "#{self.deploy_root}/#{self.app_name}"
+      set :current_path,  "#{self.app_root}/current"
+      set :shared_path,   "#{self.app_root}/shared"
+      set :releases_path, "#{self.app_root}/releases"
     end
 
     def config_environment
