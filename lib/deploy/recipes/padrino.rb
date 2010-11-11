@@ -44,7 +44,7 @@ module Deploy
         end
 
         def push_code
-          local "rsync /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
+          local "rsync #{config.extra_rsync_options} /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
         end
 
         def setup_db
