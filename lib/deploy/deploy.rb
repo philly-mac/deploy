@@ -22,6 +22,8 @@ module Deploy
         self.dry_run = options[:dry]
         self.verbose = options[:verbose]
 
+        self.verbose = true if self.dry_run
+
         # Set the configuration options
         c = ::Deploy::Config.new
         c.set :env, env
