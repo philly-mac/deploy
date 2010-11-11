@@ -20,7 +20,7 @@ module Deploy
         r_commands = self.remote_commands.map do |r_command|
           puts "REMOTE: #{r_command}" if ::Deploy::Deploy.verbose
           r_command
-        end.join("; ")
+        end.join(" && ")
         local "ssh #{config.extra_ssh_options} #{config.username}@#{config.remote} #{r_commands}"
         puts "\n"
         self.remote_commands = []
