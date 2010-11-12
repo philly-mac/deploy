@@ -26,37 +26,38 @@ module Deploy
           restart
         end
 
-        private
+        protected
 
-        def create_directories
+        def create_directories(delay_push = false)
           mkdir "#{config.shared_path}/log"
           mkdir "#{config.shared_path}/config"
           mkdir "#{config.shared_path}/vendor"
           mkdir "#{config.shared_path}/tmp"
           mkdir "#{config.releases_path}"
-          push!
+          remote "echo \"rvm --create use default@#{config.gemset_name}\" > #{config.app_root}/.rvmrc"
+          push! unless delay_push
         end
 
-        def get_and_pack_code
+        def get_and_pack_code(delay_push = false)
           local "cd #{config.local_root}"
           local "git pull"
           local "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
         end
 
-        def push_code
+        def push_code(delay_push = false)
           local "rsync #{config.extra_rsync_options} /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
         end
 
-        def setup_db
+        def setup_db(delay_push = false)
           on_bad_exit "mysql -u root -p #{config.database_password} #{config.database} -e 'show tables;' 2>&1 > /dev/null",
             [
               "cd #{config.current_path}",
               "PADRINO_ENV=#{config.env} bundle exec rake db:setup"
             ]
-          push!
+          push! unless delay_push
         end
 
-        def unpack
+        def unpack(delay_push = false)
           release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
           on_good_exit file_exists("/tmp/#{config.app_name}.tar.bz2", false),
             [
@@ -65,26 +66,34 @@ module Deploy
               "cd #{release_stamp}",
               "tar -xjf /tmp/#{config.app_name}.tar.bz2",
             ]
-          push!
+            remote "chown -Rf #{config.app_root} #{config.remote_user}:#{config.remote_group}"
+            remote "find #{config.app_root} -type d -exec chmod 775 '{}' \\;"
+            remote "find #{config.app_root} -type f -exec chmod 664 '{}' \\;"
+            remote "find #{config.app_root} -type d -name \"bin\" -exec chmod -Rf 775 '{}' \;"
+          push! unless delay_push
         end
 
-        def link
-          remote "cd #{config.releases_path}"
-          remote "rm #{config.current_path}"
-          remote "for i in $( ls -rl -m1 ); do LATEST_RELEASE=$i; break; done"
-          remote "ln -s \"#{config.releases_path}/$LATEST_RELEASE #{config.current_path}\""
-          remote "ln -s \"#{config.shared_path}/log $LATEST_RELEASE/log\""
-          remote "ln -s \"#{config.shared_path}/vendor $LATEST_RELEASE/vendor\""
-          remote "ln -s \"#{config.shared_path}/tmp $LATEST_RELEASE/tmp\""
-          push!
+        def link(delay_push = false)
+          on_good_exit(file_exists(config.current_path,false), [ "rm #{config.current_path}" ])
+          remote "for i in $( ls -rl -m1 #{config.releases_path} ); do LATEST_RELEASE=$i; break; done"
+          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
+          remote "ln -s #{config.shared_path}/log #{config.releases_path}/$LATEST_RELEASE/log"
+          remote "ln -s #{config.shared_path}/vendor #{config.releases_path}/$LATEST_RELEASE/vendor"
+          remote "ln -s #{config.shared_path}/tmp #{config.releases_path}/$LATEST_RELEASE/tmp"
+          push! unless delay_push
         end
 
-        def bundle
+        def bundle(delay_push = false)
+          remote "rvm update"
+          remote "rvm reload"
+          remote "source /usr/local/lib/rvm"
+          remote "rvm rvmrc trust #{config.app_root}"
           remote "cd #{config.current_path}"
           remote "bundle install --without test --deployment"
+          push! unless delay_push
         end
 
-        def clean_up
+        def clean_up(delay_push = false)
           remote "cd #{config.releases_path}"
           remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
           remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
@@ -93,24 +102,24 @@ module Deploy
             [
               "for i in $( ls -tlr -m1 ); do echo rm -rf $i [ $COUNTER == $NUM_TO_REMOVE ] && break; COUNTER=$(( $COUNTER + 1 )) done",
             ]
-          push!
+          push! unless delay_push
         end
 
-        def auto_upgrade
+        def auto_upgrade(delay_push = false)
           remote "cd #{config.current_path}"
           remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:upgrade"
           push!
         end
 
-        def auto_migrate
+        def auto_migrate(delay_push = false)
           remote "cd #{config.current_path}"
           remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:migrate"
-          push!
+          push! unless delay_push
         end
 
-        def restart
+        def restart(delay_push = false)
           remote "touch #{config.current_path}/tmp/restart.txt"
-          push!
+          push! unless delay_push
         end
       end
     end
