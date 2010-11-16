@@ -84,8 +84,8 @@ module Deploy
         end
 
         def bundle(delay_push = false)
-          remote "rvm update"
-          remote "rvm reload"
+#          remote "rvm update"
+#          remote "rvm reload"
           remote "source /usr/local/lib/rvm"
           remote "rvm rvmrc trust #{config.app_root}"
           remote "cd #{config.current_path}"
