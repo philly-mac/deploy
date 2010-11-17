@@ -3,7 +3,7 @@ require 'erb'
 
 module Deploy
   module Recipes
-    class Protonet < ::Deploy::Base::Recipes::Base
+    class Protonet < ::Deploy::Recipes::Base
 
       class << self
 

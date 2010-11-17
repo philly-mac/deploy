@@ -1,13 +1,7 @@
 APP_ROOT = "#{File.dirname(File.expand_path(__FILE__))}/.."
 $: << "#{APP_ROOT}/lib"
 
-require "deploy/deploy"
-require "deploy/config"
-require "deploy/base"
-require "deploy/remote_commands"
-require "deploy/utils"
-#require 'sham'
-#require 'ffaker'
+require "deploy"
 
 #require File.dirname(__FILE__) + "/blueprints"
 

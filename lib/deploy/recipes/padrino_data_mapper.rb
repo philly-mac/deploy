@@ -1,6 +1,6 @@
 module Deploy
   module Recipes
-    class Padrino < ::Deploy::Base::Recipes::Base
+    class PadrinoDataMapper < ::Deploy::Recipes::Base
 
       class << self
 
@@ -45,17 +45,14 @@ module Deploy
         end
 
         def setup_db(delay_push = false)
-          on_bad_exit "mysql -u root -p #{config.database_password} #{config.database} -e 'show tables;' 2>&1 > /dev/null",
-            [
-              "cd #{config.current_path}",
-              "PADRINO_ENV=#{config.env} bundle exec rake db:setup"
-            ]
+          "cd #{config.current_path}"
+          "PADRINO_ENV=#{config.env} bundle exec padrino rake dm:create"
           push! unless delay_push
         end
 
         def unpack(delay_push = false)
           release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
-          on_good_exit file_exists("/tmp/#{config.app_name}.tar.bz2", false),
+          file_exists "/tmp/#{config.app_name}.tar.bz2",
             [
               "cd #{config.releases_path}",
               "mkdir #{release_stamp}",
@@ -70,22 +67,17 @@ module Deploy
         end
 
         def link(delay_push = false)
-          on_good_exit(file_exists(config.current_path,false), [ "rm #{config.current_path}" ])
           remote "for i in $( ls -rl -m1 #{config.releases_path} ); do LATEST_RELEASE=$i; break; done"
-          remote "ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"
-          remote "ln -s #{config.shared_path}/log #{config.releases_path}/$LATEST_RELEASE/log"
-          remote "ln -s #{config.shared_path}/vendor #{config.releases_path}/$LATEST_RELEASE/vendor"
-          remote "ln -s #{config.shared_path}/tmp #{config.releases_path}/$LATEST_RELEASE/tmp"
+
+          link_exists(config.current_path, [ "rm #{config.current_path}" ])
+          link_not_exists("#{config.releases_path}/$LATEST_RELEASE", ["ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"])
+          link_not_exists("#{config.shared_path}/log", ["ln -s #{config.shared_path}/log #{config.releases_path}/$LATEST_RELEASE/log"])
+          link_not_exists("#{config.shared_path}/vendor", ["ln -s #{config.shared_path}/vendor #{config.releases_path}/$LATEST_RELEASE/vendor"])
+          link_not_exists("#{config.shared_path}/tmp", ["ln -s #{config.shared_path}/tmp #{config.releases_path}/$LATEST_RELEASE/tmp"])
           push! unless delay_push
         end
 
-        def update_rvm
-          remote "rvm update"
-          remote "rvm reload"
-        end
-
         def bundle(delay_push = false)
-
           remote "source /usr/local/lib/rvm"
           remote "rvm rvmrc trust #{config.app_root}"
           remote "cd #{config.current_path}"
@@ -100,7 +92,7 @@ module Deploy
           remote "export COUNTER=1"
           on_good_exit "[[ $NUM_TO_REMOVE =~ ^[0-9]+$ ]] && [[ $COUNTER =~ ^[[0-9]]+$ ]] && [[ $NUM_TO_REMOVE -ge 1 ]]",
             [
-              "for i in $( ls -tlr -m1 ); do rm -rf $i; [[ $COUNTER == $NUM_TO_REMOVE ]] && break; COUNTER=$(( $COUNTER + 1 )); done",
+              "for i in $( ls -tlr -m1 ); do echo \"removing $i\"; rm -rf $i; [[ $COUNTER == $NUM_TO_REMOVE ]] && break; COUNTER=$(( $COUNTER + 1 )); done",
             ]
           push! unless delay_push
         end

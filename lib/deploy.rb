@@ -8,6 +8,6 @@ require 'deploy/utils'
 
 require 'deploy/recipes/base'
 require 'deploy/recipes/protonet'
-require 'deploy/recipes/padrino'
-require 'deploy/recipes/rail'
+require 'deploy/recipes/padrino_data_mapper'
+require 'deploy/recipes/rails'
 

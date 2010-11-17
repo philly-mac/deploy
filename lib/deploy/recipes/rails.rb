@@ -1,6 +1,6 @@
 module Deploy
   module Recipes
-    class Rails < ::Deploy::Base::Recipes::Base
+    class Rails < ::Deploy::Recipes::Base
 
       class << self
         attr_accessor :config

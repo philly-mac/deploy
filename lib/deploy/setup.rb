@@ -34,7 +34,7 @@ module Deploy
         r = nil
         begin
           require "deploy/recipes/#{recipe}"
-          r = eval("::Deploy::Recipes::#{Utils.capitalize(recipe)}")
+          r = eval("::Deploy::Recipes::#{Utils.camelize(recipe)}")
         rescue
           # The recipe that was specified does not exist in the default recipes
         end
@@ -43,7 +43,7 @@ module Deploy
 
         if File.exists?(custom_recipe)
           require custom_recipe
-          r = eval("::#{Utils.capitalize(recipe)}")
+          r = eval("::#{Utils.camelize(recipe)}")
         end
 
         if r
