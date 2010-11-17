@@ -15,7 +15,6 @@ module Deploy
           setup_db
           link_current
           deploy_monit
-          restart_services
           restart_apache
         end
 
@@ -28,6 +27,7 @@ module Deploy
           clean_up
           link_current
           deploy_monit
+          restart_services
           restart_apache
         end
 
