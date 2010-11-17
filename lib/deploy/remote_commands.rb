@@ -7,23 +7,23 @@ module Deploy
     end
 
     def file_not_exists(file, remote = true)
-      commands = ["[ ! -e #{file} ]"]
+      commands = ["[[ ! -e #{file} ]]"]
       remote_or_return(commands, remote)
     end
 
     def file_exists(file, remote = true)
-      commands = ["[ -e #{file} ]"]
+      commands = ["[[ -e #{file} ]]"]
       remote_or_return(commands, remote)
     end
 
     def on_good_exit(test, commands)
       remote test
-      remote "if [ $? = 0 ]; then #{compile_commands(commands)}; fi"
+      remote "if [[ $? = 0 ]]; then #{compile_commands(commands)}; fi"
     end
 
     def on_bad_exit(test, commands)
       remote test
-      remote "if [ $? -ne 0 ]; then #{compile_commands(commands)}; fi"
+      remote "if [[ $? -ne 0 ]]; then #{compile_commands(commands)}; fi"
     end
 
     def compile_commands(commands)
@@ -50,3 +50,4 @@ module Deploy
     end
   end
 end
+

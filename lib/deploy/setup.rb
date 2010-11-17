@@ -1,5 +1,5 @@
 module Deploy
-  class Deploy
+  class Setup
 
     class << self
       attr_accessor :dry_run

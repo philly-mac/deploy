@@ -11,12 +11,7 @@ VERBOSE = false
 $: << "#{APP_ROOT}/lib"
 
 # Require standard files
-require "deploy/deploy"
-require "deploy/config"
-require "deploy/base"
-require "deploy/remote_commands"
-require "deploy/utils"
-require 'optparse'
+require "deploy"
 
 # Parse the options
 options = {}
@@ -31,5 +26,5 @@ op = OptionParser.new do |opts|
 end
 op.parse!
 
-exit ::Deploy::Deploy.init(options, op.summarize)
+exit ::Deploy::Setup.init(options, op.summarize)
 

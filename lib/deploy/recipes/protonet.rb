@@ -3,14 +3,9 @@ require 'erb'
 
 module Deploy
   module Recipes
-    class Protonet
-
-      extend ::Deploy::Base
-      extend ::Deploy::RemoteCommands
+    class Protonet < ::Deploy::Base::Recipes::Base
 
       class << self
-        attr_accessor :config
-
 
         def setup(config)
           self.config = config

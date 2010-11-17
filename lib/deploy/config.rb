@@ -1,13 +1,5 @@
 module Deploy
   class Config
-    attr_accessor :env
-    attr_accessor :user_name
-    attr_accessor :deploy_root
-    attr_accessor :app_name
-    attr_accessor :remote
-    attr_accessor :current_path
-    attr_accessor :shared_path
-    attr_accessor :release_path
 
     def initialize
       set :deploy_root,   "/var/www"
@@ -20,6 +12,7 @@ module Deploy
       set :current_path,  "#{self.app_root}/current"
       set :shared_path,   "#{self.app_root}/shared"
       set :releases_path, "#{self.app_root}/releases"
+      set :shell,         "/bin/bash"
     end
 
     def config_environment
@@ -41,10 +34,6 @@ module Deploy
         eval file_contents
       end
       set_paths!
-    end
-
-    def refresh!
-
     end
 
     def set(key, value)

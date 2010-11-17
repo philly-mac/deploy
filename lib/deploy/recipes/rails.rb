@@ -1,9 +1,6 @@
 module Deploy
   module Recipes
-    class Rails
-
-      extend ::Deploy::Base
-      extend ::Deploy::RemoteCommands
+    class Rails < ::Deploy::Base::Recipes::Base
 
       class << self
         attr_accessor :config

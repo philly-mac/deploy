@@ -1,12 +1,8 @@
 module Deploy
   module Recipes
-    class Padrino
-
-      extend ::Deploy::Base
-      extend ::Deploy::RemoteCommands
+    class Padrino < ::Deploy::Base::Recipes::Base
 
       class << self
-        attr_accessor :config
 
         def setup(config)
           self.config = config
@@ -83,9 +79,13 @@ module Deploy
           push! unless delay_push
         end
 
+        def update_rvm
+          remote "rvm update"
+          remote "rvm reload"
+        end
+
         def bundle(delay_push = false)
-#          remote "rvm update"
-#          remote "rvm reload"
+
           remote "source /usr/local/lib/rvm"
           remote "rvm rvmrc trust #{config.app_root}"
           remote "cd #{config.current_path}"
@@ -98,9 +98,9 @@ module Deploy
           remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
           remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
           remote "export COUNTER=1"
-          on_good_exit "[ $NUM_TO_REMOVE =~ ^[0-9]+$ ] && [ $COUNTER =~ ^[0-9]+$ ] && [ $NUM_TO_REMOVE -ge 1 ]",
+          on_good_exit "[[ $NUM_TO_REMOVE =~ ^[0-9]+$ ]] && [[ $COUNTER =~ ^[[0-9]]+$ ]] && [[ $NUM_TO_REMOVE -ge 1 ]]",
             [
-              "for i in $( ls -tlr -m1 ); do echo rm -rf $i [ $COUNTER == $NUM_TO_REMOVE ] && break; COUNTER=$(( $COUNTER + 1 )) done",
+              "for i in $( ls -tlr -m1 ); do rm -rf $i; [[ $COUNTER == $NUM_TO_REMOVE ]] && break; COUNTER=$(( $COUNTER + 1 )); done",
             ]
           push! unless delay_push
         end
