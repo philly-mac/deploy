@@ -90,7 +90,7 @@ module Deploy
           remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
           remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
           remote "export COUNTER=1"
-          on_good_exit "[[ $NUM_TO_REMOVE =~ ^[0-9]+$ ]] && [[ $COUNTER =~ ^[[0-9]]+$ ]] && [[ $NUM_TO_REMOVE -ge 1 ]]",
+          on_good_exit "[[ $NUM_TO_REMOVE =~ ^[0-9]+$ ]] && [[ $COUNTER =~ ^[0-9]+$ ]] && [[ $NUM_TO_REMOVE -ge 1 ]]",
             [
               "for i in $( ls -tlr -m1 ); do echo \"removing $i\"; rm -rf $i; [[ $COUNTER == $NUM_TO_REMOVE ]] && break; COUNTER=$(( $COUNTER + 1 )); done",
             ]

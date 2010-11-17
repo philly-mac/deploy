@@ -36,7 +36,6 @@ module Deploy
       remote test
       remote "if [[ $? -ne 0 ]]; then #{commands}; fi"
     end
-
   end
 end
 
