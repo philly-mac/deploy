@@ -52,7 +52,7 @@ module Deploy
           system monit_command + " quit"
           sleep 2
           system monit_command
-          sleep 4
+          sleep 2
         end
 
         # todo: replace by app configuration & remove
@@ -139,7 +139,7 @@ module Deploy
             num_to_delete = num_releases - config.max_num_releases
 
             num_to_delete.times do
-              FileUtils.rm_rf "#{config.releases_path}/#{all_releases.delete_at(0)}"
+              FileUtils.rm_rf "#{all_releases.delete_at(0)}"
             end
           end
         end
