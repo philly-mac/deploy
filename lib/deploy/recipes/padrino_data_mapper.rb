@@ -46,7 +46,7 @@ module Deploy
 
         def setup_db(delay_push = false)
           "cd #{config.current_path}"
-          "PADRINO_ENV=#{config.env} bundle exec padrino rake dm:create"
+          "bundle exec padrino rake dm:create -e #{config.env}"
           push! unless delay_push
         end
 
@@ -59,7 +59,7 @@ module Deploy
               "cd #{release_stamp}",
               "tar -xjf /tmp/#{config.app_name}.tar.bz2",
             ]
-            remote "chown -Rf #{config.app_root} #{config.remote_user}:#{config.remote_group}"
+            remote "chown -Rf #{config.remote_user}:#{config.remote_group} #{config.app_root}"
             remote "find #{config.app_root} -type d -exec chmod 775 '{}' \\;"
             remote "find #{config.app_root} -type f -exec chmod 664 '{}' \\;"
             remote "find #{config.app_root} -type d -name \"bin\" -exec chmod -Rf 775 '{}' \;"
@@ -99,13 +99,13 @@ module Deploy
 
         def auto_upgrade(delay_push = false)
           remote "cd #{config.current_path}"
-          remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:upgrade"
+          remote "padrino rake dm:auto:upgrade -e #{config.env}"
           push!
         end
 
         def auto_migrate(delay_push = false)
           remote "cd #{config.current_path}"
-          remote "PADRINO_ENV=#{config.env} padrino rake dm:auto:migrate"
+          remote "padrino rake dm:auto:migrate -e #{config.env}"
           push! unless delay_push
         end
 
