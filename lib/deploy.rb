@@ -1,6 +1,7 @@
 require 'optparse'
 
 require 'deploy/config'
+require 'deploy/recipe_map'
 require 'deploy/setup'
 require 'deploy/base'
 require 'deploy/remote_commands'

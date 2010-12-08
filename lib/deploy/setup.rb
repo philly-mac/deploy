@@ -30,9 +30,16 @@ module Deploy
         c.config_environment
         c.config_custom(config_file) if config_file
 
+        # Map short names for the recipes
+        map_default_recipes
+
         # Load the recipe
         r = nil
         begin
+          # Check if we are using an alias
+          alias_recipe = Deploy::RecipeMap.recipe_clazz(recipe)
+          recipe = alias_recipe if alias_recipe != recipe
+
           require "deploy/recipes/#{recipe}"
           r = eval("::Deploy::Recipes::#{Utils.camelize(recipe)}")
         rescue
@@ -52,6 +59,12 @@ module Deploy
         end
 
         return 0
+      end
+
+      def map_default_recipes
+        Deploy::RecipeMap.map("padrino_data_mapper", "pdm")
+        Deploy::RecipeMap.map("protonet", "pn")
+        Deploy::RecipeMap.map("rails", "r")
       end
     end
   end
