@@ -20,7 +20,7 @@ module Deploy
         method       = options[:method]
         config_file  = options[:config]
         self.dry_run = options[:dry]
-        self.verbose = options[:verbose]
+        self.verbose = !options[:quiet]
 
         self.verbose = true if self.dry_run
 
