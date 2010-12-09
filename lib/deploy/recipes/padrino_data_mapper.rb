@@ -60,9 +60,9 @@ module Deploy
               "tar -xjf /tmp/#{config.app_name}.tar.bz2",
             ]
             remote "chown -Rf #{config.remote_user}:#{config.remote_group} #{config.app_root}"
-            remote "find #{config.app_root} -type d -exec chmod 775 '{}' \\;"
-            remote "find #{config.app_root} -type f -exec chmod 664 '{}' \\;"
-            remote "find #{config.app_root} -type d -name \"bin\" -exec chmod -Rf 775 '{}' \;"
+            remote "find #{config.current_path} -type d -exec chmod 775 '{}' \\;"
+            remote "find #{config.current_path} -type f -exec chmod 664 '{}' \\;"
+            remote "find #{config.shared_path}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
           push! unless delay_push
         end
 
