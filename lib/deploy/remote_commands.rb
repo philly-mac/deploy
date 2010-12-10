@@ -29,11 +29,13 @@ module Deploy
 
     def on_good_exit(test, commands)
       remote test
+      commands = commands.join(" && ")
       remote "if [[ $? = 0 ]]; then #{commands}; fi"
     end
 
     def on_bad_exit(test, commands)
       remote test
+      commands = commands.join(" && ")
       remote "if [[ $? -ne 0 ]]; then #{commands}; fi"
     end
   end
