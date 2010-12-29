@@ -50,8 +50,9 @@ module Deploy
           # and restart monit
           system monit_command + " quit"
           sleep 2
-          system monit_command + " start all"
+          system monit_command
           sleep 2
+          system monit_command + " start all"
         end
 
         # todo: replace by app configuration & remove
