@@ -10,7 +10,6 @@ module Deploy
         def setup(config)
           self.config = config
           prepare_code
-          move_config_to_shared
           bundle
           setup_db
           link_current
@@ -51,7 +50,7 @@ module Deploy
           # and restart monit
           system monit_command + " quit"
           sleep 2
-          system monit_command
+          system monit_command + " start all"
           sleep 2
         end
 
@@ -90,10 +89,6 @@ module Deploy
         def create_directory(dir_name, permissions = nil)
           FileUtils.mkdir_p dir_name
           FileUtils.chmod permissions, dir_name if permissions
-        end
-
-        def move_config_to_shared
-          system("mv ~/deploy_config #{config.shared_path}/config/protonet.d/deploy_config")
         end
 
         def setup_db
