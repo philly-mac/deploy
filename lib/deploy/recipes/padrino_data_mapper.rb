@@ -7,7 +7,11 @@ module Deploy
         def setup(config)
           self.config = config
           create_directories
+        end
+
+        def create_db
           setup_db
+          auto_migrate
         end
 
         def deploy(config)
