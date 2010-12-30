@@ -11,28 +11,26 @@ module Deploy
 
         def deploy_create(config)
           self.config = config
-          setup_db
-          auto_migrate
+          base_deploy({:after => :bundle, :actions => [:setup_db, :auto_migrate]})
         end
 
         def deploy_upgrade(config)
           self.config = config
-          base_deploy
-          auto_upgrade
+          base_deploy({:after => :bundle, :actions => :auto_upgrade})
         end
         alias :deploy :deploy_upgrade
 
         protected
 
-        def base_deploy
-          get_and_pack_code
-          push_code
-          unpack
-          link
-          bundle
-          auto_upgrade
-          clean_up
-          restart
+        def base_deploy(after_spec = nil)
+          actions = [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
+          actions.each do |action|
+            self.send action
+            if after_spec && after_spec[:after] == action
+              after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
+              after_spec[:actions].each{|as_action| self.send(as_action) }
+            end
+          end
         end
 
         def create_directories(delay_push = false)
