@@ -108,13 +108,13 @@ module Deploy
 
         def auto_upgrade(delay_push = false)
           remote "cd #{config.current_path}"
-          remote "padrino rake dm:auto:upgrade -e #{config.env}"
+          remote "bundle exec padrino rake dm:auto:upgrade -e #{config.env}"
           push!
         end
 
         def auto_migrate(delay_push = false)
           remote "cd #{config.current_path}"
-          remote "padrino rake dm:auto:migrate -e #{config.env}"
+          remote "bundle exec padrino rake dm:auto:migrate -e #{config.env}"
           push! unless delay_push
         end
 
