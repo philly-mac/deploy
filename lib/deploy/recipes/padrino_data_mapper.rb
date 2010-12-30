@@ -9,13 +9,22 @@ module Deploy
           create_directories
         end
 
-        def create_db
+        def deploy_create(config)
+          self.config = config
           setup_db
           auto_migrate
         end
 
-        def deploy(config)
+        def deploy_upgrade(config)
           self.config = config
+          base_deploy
+          auto_upgrade
+        end
+        alias :deploy :deploy_upgrade
+
+        protected
+
+        def base_deploy
           get_and_pack_code
           push_code
           unpack
@@ -25,8 +34,6 @@ module Deploy
           clean_up
           restart
         end
-
-        protected
 
         def create_directories(delay_push = false)
           mkdir "#{config.shared_path}/log"
