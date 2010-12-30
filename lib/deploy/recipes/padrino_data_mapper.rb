@@ -90,7 +90,7 @@ module Deploy
           remote "source /usr/local/lib/rvm"
           remote "rvm rvmrc trust #{config.app_root}"
           remote "cd #{config.current_path}"
-          remote "bundle install --without test --deployment"
+          remote "bundle install --without test development --deployment"
           push! unless delay_push
         end
 
