@@ -64,12 +64,13 @@ module Deploy
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
           create_directory "#{config.shared_path}/system"
-          create_directory "#{config.shared_path}/config"
           create_directory "#{config.shared_path}/config/monit.d"
           create_directory "#{config.shared_path}/config/hostapd.d"
           create_directory "#{config.shared_path}/config/dnsmasq.d"
           create_directory "#{config.shared_path}/config/ifconfig.d"
           create_directory "#{config.shared_path}/config/protonet.d"
+          create_directory "#{config.shared_path}/externals/screenshots"
+          create_directory "#{config.shared_path}/externals/image_proxy"
           create_directory "#{config.shared_path}/solr/data"
           create_directory "#{config.shared_path}/user-files", 0770
           create_directory "#{config.shared_path}/pids", 0770
@@ -82,9 +83,10 @@ module Deploy
           FileUtils.rm_rf   "#{latest_deploy}/tmp/pids"
           FileUtils.mkdir_p "#{latest_deploy}/public"
           FileUtils.mkdir_p "#{latest_deploy}/tmp"
-          FileUtils.ln_s    "#{config.shared_path}/log",    "#{latest_deploy}/log"
-          FileUtils.ln_s    "#{config.shared_path}/system", "#{latest_deploy}/public/system"
-          FileUtils.ln_s    "#{config.shared_path}/pids",   "#{latest_deploy}/tmp/pids"
+          FileUtils.ln_s    "#{config.shared_path}/log",        "#{latest_deploy}/log"
+          FileUtils.ln_s    "#{config.shared_path}/system",     "#{latest_deploy}/public/system"
+          FileUtils.ln_s    "#{config.shared_path}/pids",       "#{latest_deploy}/tmp/pids"
+          FileUtils.ln_s    "#{config.shared_path}/externals",  "#{latest_deploy}/public/externals"
         end
 
         def create_directory(dir_name, permissions = nil)
