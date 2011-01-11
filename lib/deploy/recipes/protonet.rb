@@ -52,6 +52,7 @@ module Deploy
           sleep 2
           system monit_command
           sleep 2
+          system monit_command + " monitor all"
           system monit_command + " start all"
         end
 
