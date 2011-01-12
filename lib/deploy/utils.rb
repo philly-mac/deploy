@@ -15,6 +15,10 @@ module Deploy
       def blank?(string)
         string.nil? || string.empty?
       end
+
+      def present?(string)
+        !blank?(string)
+      end
     end
   end
 end
