@@ -11,6 +11,10 @@ module Deploy
         indexes.each    { |i| word[i] = word[i,1].upcase }
         word.gsub("_", "")
       end
+
+      def blank?(string)
+        string.nil? || string.empty?
+      end
     end
   end
 end

@@ -22,10 +22,10 @@ module Deploy
           r_command
         end.join("; ")
         cmd = "ssh "
-        cmd << "#{config.extra_ssh_options} " if config.extra_ssh_options.blank?
+        cmd << "#{config.extra_ssh_options} " if Deploy::Utils.blank?(config.extra_ssh_options)
         cmd << "#{config.username}@#{config.remote} "
         cmd << "'"
-        cmd << "#{config.after_login}; " if config.after_login.blank?
+        cmd << "#{config.after_login}; " if Deploy::Utils.blank?(config.after_login)
         cmd << "#{r_commands}"
         cmd << "'"
         local cmd
