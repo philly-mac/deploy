@@ -45,14 +45,15 @@ module Deploy
             f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
           end
 
-          system "chmod 700 #{config.shared_path}/config/monit_ptn_node"
+          local "chmod 700 #{config.shared_path}/config/monit_ptn_node"
 
           # and restart monit
-          system monit_command + " quit"
+          local monit_command + " quit"
           sleep 2
-          system monit_command
+          local monit_command
           sleep 2
-          system monit_command + " start all"
+          local monit_command + " monitor all"
+          local monit_command + " start all"
         end
 
         # todo: replace by app configuration & remove
@@ -64,12 +65,13 @@ module Deploy
           create_directory "#{config.shared_path}/log"
           create_directory "#{config.shared_path}/db"
           create_directory "#{config.shared_path}/system"
-          create_directory "#{config.shared_path}/config"
           create_directory "#{config.shared_path}/config/monit.d"
           create_directory "#{config.shared_path}/config/hostapd.d"
           create_directory "#{config.shared_path}/config/dnsmasq.d"
           create_directory "#{config.shared_path}/config/ifconfig.d"
           create_directory "#{config.shared_path}/config/protonet.d"
+          create_directory "#{config.shared_path}/externals/screenshots"
+          create_directory "#{config.shared_path}/externals/image_proxy"
           create_directory "#{config.shared_path}/solr/data"
           create_directory "#{config.shared_path}/user-files", 0770
           create_directory "#{config.shared_path}/pids", 0770
@@ -82,9 +84,10 @@ module Deploy
           FileUtils.rm_rf   "#{latest_deploy}/tmp/pids"
           FileUtils.mkdir_p "#{latest_deploy}/public"
           FileUtils.mkdir_p "#{latest_deploy}/tmp"
-          FileUtils.ln_s    "#{config.shared_path}/log",    "#{latest_deploy}/log"
-          FileUtils.ln_s    "#{config.shared_path}/system", "#{latest_deploy}/public/system"
-          FileUtils.ln_s    "#{config.shared_path}/pids",   "#{latest_deploy}/tmp/pids"
+          FileUtils.ln_s    "#{config.shared_path}/log",        "#{latest_deploy}/log"
+          FileUtils.ln_s    "#{config.shared_path}/system",     "#{latest_deploy}/public/system"
+          FileUtils.ln_s    "#{config.shared_path}/pids",       "#{latest_deploy}/tmp/pids"
+          FileUtils.ln_s    "#{config.shared_path}/externals",  "#{latest_deploy}/public/externals"
         end
 
         def create_directory(dir_name, permissions = nil)
@@ -94,9 +97,9 @@ module Deploy
 
         def setup_db
           FileUtils.cd latest_deploy do
-            db_exists = system("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
+            db_exists = local("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
             if !db_exists
-              puts "db not found, creating: #{ system("export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
+              puts "db not found, creating: #{ local("export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
             end
           end
         end
@@ -109,8 +112,8 @@ module Deploy
 
         def get_code_and_unpack
           FileUtils.cd "/tmp"
-          system "rm -f /tmp/dashboard.tar.gz"
-          system("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
+          local "rm -f /tmp/dashboard.tar.gz"
+          local("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
         end
 
         def release_dir
@@ -122,10 +125,10 @@ module Deploy
           if File.exists?("/tmp/dashboard.tar.gz")
             FileUtils.cd "/tmp"
             FileUtils.rm_rf "/tmp/dashboard"
-            system "tar -xzf #{"/tmp/dashboard.tar.gz"}"
+            local "tar -xzf #{"/tmp/dashboard.tar.gz"}"
             release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
             FileUtils.mkdir_p release_timestamp
-            system "mv /tmp/dashboard/* #{release_timestamp}"
+            local "mv /tmp/dashboard/* #{release_timestamp}"
           end
         end
 
@@ -149,16 +152,16 @@ module Deploy
 
           FileUtils.cd latest_deploy
 
-          system "bundle check 2>&1 > /dev/null"
+          local "bundle check 2>&1 > /dev/null"
 
           if $?.exitstatus != 0
-            system "bundle install --without test --without cucumber"
+            local "bundle install --without test --without cucumber"
           end
         end
 
         def migrate
           FileUtils.cd latest_deploy
-          system "export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
+          local "export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
         end
 
         def link_current
@@ -171,7 +174,7 @@ module Deploy
         end
 
         def restart_services
-          system monit_command + " -g daemons restart all"
+          local monit_command + " -g daemons restart all"
         end
 
         def latest_deploy
