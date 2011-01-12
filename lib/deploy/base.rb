@@ -21,7 +21,14 @@ module Deploy
           puts "REMOTE: #{r_command}" if ::Deploy::Setup.verbose
           r_command
         end.join("; ")
-        local "ssh #{config.extra_ssh_options} #{config.username}@#{config.remote} '#{config.after_login}; #{r_commands}'"
+        cmd = "ssh "
+        cmd << "#{config.extra_ssh_options} " if !config.extra_ssh_options.empty?
+        cmd << "#{config.username}@#{config.remote} "
+        cmd << "'"
+        cmd << "#{config.after_login}; " if !config.after_login.empty?
+        cmd << "#{r_commands}"
+        cmd << "'"
+        local cmd
         puts "\n"
         self.remote_commands = []
       end
