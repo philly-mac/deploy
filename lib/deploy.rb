@@ -1,4 +1,5 @@
 require 'rubygems'
+#require 'bundler/setup'
 
 require 'optparse'
 require 'configatron'
