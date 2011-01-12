@@ -17,7 +17,8 @@ module Deploy
 
         def job(method_name, &block)
           eigenklazz.instance_eval do
-            define_method(method_name) do |delay_push = false|
+            delay_push = false
+            define_method(method_name) do
               yield block
               push! unless delay_push
             end
