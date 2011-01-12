@@ -18,6 +18,7 @@ module Deploy
         def job(method_name, &block)
           eigenklazz.instance_eval do
             define_method(method_name) do  |*args|
+              puts "\n*** #{method_name} ***" if config.verbose
               delay_push = args.first
               delay_push ||= false
               yield block

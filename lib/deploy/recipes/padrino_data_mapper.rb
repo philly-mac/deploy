@@ -2,6 +2,19 @@ module Deploy
   module Recipes
     class PadrinoDataMapper < ::Deploy::Recipes::Base
 
+      class << self
+        def base_deploy(after_spec = nil)
+          actions = [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
+          actions.each do |action|
+            self.send action
+            if after_spec && after_spec[:after] == action
+              after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
+              after_spec[:actions].each{|as_action| self.send(as_action) }
+            end
+          end
+        end
+      end
+
       task :setup do
          create_directories
        end
@@ -12,17 +25,6 @@ module Deploy
 
       task :deploy do
         base_deploy({:after => :bundle, :actions => :auto_upgrade})
-      end
-
-      def self.base_deploy(after_spec = nil)
-        actions = [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
-        actions.each do |action|
-          self.send action
-          if after_spec && after_spec[:after] == action
-            after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
-            after_spec[:actions].each{|as_action| self.send(as_action) }
-          end
-        end
       end
 
       job :create_directories do
@@ -48,8 +50,8 @@ module Deploy
       end
 
       job :setup_db do
-        "cd #{config.current_path}"
-        "bundle exec padrino rake dm:create -e #{config.env}"
+        remote "cd #{config.current_path}"
+        remote "bundle exec padrino rake dm:create -e #{config.env}"
       end
 
       job :unpack do
