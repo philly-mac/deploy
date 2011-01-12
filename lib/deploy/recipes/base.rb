@@ -6,22 +6,28 @@ module Deploy
       extend ::Deploy::RemoteCommands
 
       class << self
+
         attr_accessor :config
 
-        protected
-
         def task(method_name, &block)
-          class_eval do
-            define_method method_name do |delay_push|
+          eigenklazz.instance_eval do
+            define_method(method_name) do
+              yield block
+            end
+          end
+        end
+
+        def job(method_name, &block)
+          eigenklazz.instance_eval do
+            define_method(method_name) do |delay_push = false|
               yield block
               push! unless delay_push
             end
           end
         end
 
-        def update_rvm
-          remote "rvm update"
-          remote "rvm reload"
+        def eigenklazz
+          (class << self; self; end)
         end
 
       end

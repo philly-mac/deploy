@@ -34,15 +34,16 @@ module Deploy
         map_default_recipes
 
         # Load the recipe
-        r = nil
+        recipe_clazz = nil
         begin
           # Check if we are using an alias
           alias_recipe = Deploy::RecipeMap.recipe_clazz(recipe)
           recipe = alias_recipe if alias_recipe != recipe
 
           require "deploy/recipes/#{recipe}"
-          r = eval("::Deploy::Recipes::#{Utils.camelize(recipe)}")
-        rescue
+          recipe_clazz = eval("::Deploy::Recipes::#{recipe.camelize}")
+        rescue Exception => e
+          puts "Error: #{e}"
           # The recipe that was specified does not exist in the default recipes
         end
 
@@ -50,12 +51,13 @@ module Deploy
 
         if File.exists?(custom_recipe)
           require custom_recipe
-          r = eval("::#{Utils.camelize(recipe)}")
+          recipe_clazz = eval("::#{recipe.camelize}")
         end
 
-        if r
-          r.send(method.to_sym, c)
-          r.push!
+        if recipe_clazz
+          recipe_clazz.config = c
+          recipe_clazz.send(method.to_sym)
+          recipe_clazz.push!
         end
 
         return 0
