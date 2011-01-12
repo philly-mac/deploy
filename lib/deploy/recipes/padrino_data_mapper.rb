@@ -41,7 +41,10 @@ module Deploy
       end
 
       job :push_code do
-        local "rsync #{config.extra_rsync_options} /tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
+        cmd = "rsync "
+        cmd << config.extra_rsync_options if !config.extra_rsync_options.nil?
+        cmd << "/tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
+        local cmd
       end
 
       job :setup_db do

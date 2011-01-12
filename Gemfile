@@ -3,7 +3,7 @@ source "http://rubygems.org"
 # Specify your gem's dependencies in deploy.gemspec
 gemspec
 
-gem 'active_support'
+gem 'configatron'
 
 # Testing
 group 'test' do

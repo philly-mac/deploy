@@ -2,10 +2,9 @@ module Deploy
   class Setup
 
     class << self
-      attr_accessor :dry_run
-      attr_accessor :verbose
 
       def init(options, summary)
+
         # Check whether we have the minimum set of options
         [:recipe, :environment, :method].each do |param|
           unless options.keys.include?(param)
@@ -15,20 +14,22 @@ module Deploy
         end
 
         # Assaign the parsed options to local variables
-        recipe       = options[:recipe]
-        env          = options[:environment]
-        method       = options[:method]
-        config_file  = options[:config]
-        self.dry_run = options[:dry]
-        self.verbose = !options[:quiet]
+        recipe         = options[:recipe]
+        config.env     = options[:environment]
+        method         = options[:method]
+        config_file    = options[:config]
+        config.dry_run = options[:dry]
+        config.verbose = !options[:quiet]
 
-        self.verbose = true if self.dry_run
+        config.verbose = true if config.dry_run
 
         # Set the configuration options
-        c = ::Deploy::Config.new
-        c.set :env, env
-        c.config_environment
-        c.config_custom(config_file) if config_file
+        config.deploy_root   = "/var/www"
+        config.app_name      = "test"
+        config.shell         = "/bin/bash"
+
+        config_environment
+        custom_config(config_file) if config_file
 
         # Map short names for the recipes
         map_default_recipes
@@ -53,9 +54,7 @@ module Deploy
           require custom_recipe
           recipe_clazz = eval("::#{recipe.camelize}")
         end
-
         if recipe_clazz
-          recipe_clazz.config = c
           recipe_clazz.send(method.to_sym)
           recipe_clazz.push!
         end
@@ -68,6 +67,39 @@ module Deploy
         Deploy::RecipeMap.map("protonet", "pn")
         Deploy::RecipeMap.map("rails", "r")
       end
+
+      def set_paths!
+        config.app_root      = "#{config.deploy_root}/#{config.app_name}"
+        config.current_path  = "#{config.app_root}/current"
+        config.shared_path   = "#{config.app_root}/shared"
+        config.releases_path = "#{config.app_root}/releases"
+      end
+
+      def config_environment
+        load_config("#{VIRTUAL_APP_ROOT}/deploy/environments/#{config.env}.rb")
+      end
+
+      def custom_config(file)
+        load_config(file)
+      end
+
+      def load_config(file)
+        if File.exists?(file)
+          file_contents = ""
+          File.open(file, "r") do |infile|
+            while (line = infile.gets)
+              file_contents += line
+            end
+          end
+          eval file_contents
+        end
+        set_paths!
+      end
+
+      def set(key, value)
+        config.configure_from_hash({key => value})
+      end
+
     end
   end
 end

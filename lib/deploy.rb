@@ -1,7 +1,9 @@
-require 'optparse'
-require 'active_support/all'
+require 'rubygems'
 
-require 'deploy/config'
+require 'optparse'
+require 'configatron'
+
+require 'deploy/extensions'
 require 'deploy/recipe_map'
 require 'deploy/setup'
 require 'deploy/base'

@@ -7,8 +7,6 @@ module Deploy
 
       class << self
 
-        attr_accessor :config
-
         def task(method_name, &block)
           eigenklazz.instance_eval do
             define_method(method_name) do

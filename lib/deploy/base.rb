@@ -11,21 +11,21 @@ module Deploy
     end
 
     def local(command)
-      puts "LOCAL: #{command}" if ::Deploy::Setup.verbose
-      system command unless ::Deploy::Setup.dry_run
+      puts "LOCAL: #{command}" if config.verbose
+      system command unless config.dry_run
     end
 
     def push!
       unless self.remote_commands.empty?
         r_commands = self.remote_commands.map do |r_command|
-          puts "REMOTE: #{r_command}" if ::Deploy::Setup.verbose
+          puts "REMOTE: #{r_command}" if config.verbose
           r_command
         end.join("; ")
         cmd = "ssh "
-        cmd << "#{config.extra_ssh_options} " if config.extra_ssh_options.present?
+        cmd << "#{config.extra_ssh_options} " if !config.extra_ssh_options.nil?
         cmd << "#{config.username}@#{config.remote} "
         cmd << "'"
-        cmd << "#{config.after_login}; " if config.after_login.present?
+        cmd << "#{config.after_login}; " if !config.after_login.nil?
         cmd << "#{r_commands}"
         cmd << "'"
         local cmd
