@@ -10,6 +10,15 @@ module Deploy
 
         protected
 
+        def task(method_name, &block)
+          class_eval do
+            define_method method_name do |delay_push|
+              yield block
+              push! unless delay_push
+            end
+          end
+        end
+
         def update_rvm
           remote "rvm update"
           remote "rvm reload"

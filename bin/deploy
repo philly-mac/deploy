@@ -22,7 +22,7 @@ op = OptionParser.new do |opts|
   opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method]      = m }
   opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config]      = c }
   opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
-  opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]     = q }
+  opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]       = q }
 end
 op.parse!
 
