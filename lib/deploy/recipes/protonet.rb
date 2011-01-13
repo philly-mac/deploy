@@ -20,6 +20,10 @@ module Deploy
           local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
         end
 
+        def bundle_cleanup
+          "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE;"
+        end
+
       end
 
       task :setup do
@@ -104,7 +108,7 @@ module Deploy
         FileUtils.cd latest_deploy do
           db_exists = local("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
           if !db_exists
-            puts "db not found, creating: #{ local("export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
+            puts "db not found, creating: #{ local("#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
           end
         end
       end
@@ -157,13 +161,13 @@ module Deploy
 
         FileUtils.cd latest_deploy
 
-        local "bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
+        local "#{bundle_cleanup}; bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
 
       end
 
       job :migrate do
         FileUtils.cd latest_deploy
-        local "export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
+        local "#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
       end
 
       job :link_current do
