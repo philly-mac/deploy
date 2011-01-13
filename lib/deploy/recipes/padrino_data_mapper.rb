@@ -2,18 +2,7 @@ module Deploy
   module Recipes
     class PadrinoDataMapper < ::Deploy::Recipes::Base
 
-      class << self
-        def base_deploy(after_spec = nil)
-          actions = [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
-          actions.each do |action|
-            self.send action
-            if after_spec && after_spec[:after] == action
-              after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
-              after_spec[:actions].each{|as_action| self.send(as_action) }
-            end
-          end
-        end
-      end
+      set_base_deploy_actions [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
 
       task :setup do
          create_directories
