@@ -16,7 +16,7 @@ module Deploy
         end
 
         def monit_command(command = "")
-          puts "running monit command #{command}"
+          puts "\nrunning monit command #{command}"
           local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
         end
 
