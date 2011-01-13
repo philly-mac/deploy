@@ -10,6 +10,15 @@ module Deploy
           FileUtils.mkdir_p dir_name
           FileUtils.chmod permissions, dir_name if permissions
         end
+
+        def latest_deploy
+          Dir["#{config.releases_path}/*"].sort.last
+        end
+
+        def monit_command
+          "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid"
+        end
+
       end
 
       task :setup do
@@ -33,10 +42,6 @@ module Deploy
         restart_apache
       end
 
-
-      job :monit_command do
-        "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid"
-      end
 
       job :deploy_monit do
         # variables for erb
@@ -173,10 +178,6 @@ module Deploy
 
       job :restart_services do
         local monit_command + " -g daemons restart all"
-      end
-
-      job :latest_deploy do
-        Dir["#{config.releases_path}/*"].sort.last
       end
 
     end
