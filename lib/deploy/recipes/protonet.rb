@@ -6,7 +6,7 @@ module Deploy
     class Protonet < ::Deploy::Recipes::Base
 
       class << self
-        def self.create_directory(dir_name, permissions = nil)
+        def create_directory(dir_name, permissions = nil)
           FileUtils.mkdir_p dir_name
           FileUtils.chmod permissions, dir_name if permissions
         end
