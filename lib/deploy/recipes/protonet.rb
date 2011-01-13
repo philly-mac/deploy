@@ -179,7 +179,7 @@ module Deploy
       end
 
       job :restart_services do
-        local monit_command + " -g daemons restart all"
+        monit_command "-g daemons restart all"
       end
 
     end
