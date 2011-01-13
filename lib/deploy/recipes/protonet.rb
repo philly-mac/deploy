@@ -15,8 +15,9 @@ module Deploy
           Dir["#{config.releases_path}/*"].sort.last
         end
 
-        def monit_command
-          "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid"
+        def monit_command(command = "")
+          puts "running monit command #{command}"
+          local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
         end
 
       end
@@ -55,12 +56,13 @@ module Deploy
         local "chmod 700 #{config.shared_path}/config/monit_ptn_node"
 
         # and restart monit
-        local monit_command + " quit"
+        monit_command "quit"
         sleep 2
-        local monit_command
+        # restarts it
+        monit_command
         sleep 2
-        local monit_command + " monitor all"
-        local monit_command + " start all"
+        monit_command "monitor all"
+        monit_command "start all"
       end
 
       # todo: replace by app configuration & remove
