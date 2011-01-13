@@ -157,11 +157,8 @@ module Deploy
 
         FileUtils.cd latest_deploy
 
-        local "bundle check 2>&1 > /dev/null"
+        local "bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
 
-        if $?.exitstatus != 0
-          local "bundle install --without test --without cucumber"
-        end
       end
 
       job :migrate do
