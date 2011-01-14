@@ -16,7 +16,7 @@ module Deploy
         base_deploy({:after => :bundle, :actions => :auto_upgrade})
       end
 
-      job :create_directories do
+      task :create_directories, true do
         mkdir "#{config.shared_path}/log"
         mkdir "#{config.shared_path}/config"
         mkdir "#{config.shared_path}/vendor"
@@ -25,25 +25,25 @@ module Deploy
         remote "echo \"rvm --create use default@#{config.gemset_name}\" > #{config.app_root}/.rvmrc"
       end
 
-      job :get_and_pack_code do
-        local "cd #{config.local_root}"
-        local "git pull"
-        local "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
+      task :get_and_pack_code, true do
+        run_now! "cd #{config.local_root}"
+        run_now! "git pull"
+        run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
       end
 
-      job :push_code do
+      task :push_code, true do
         cmd = "rsync "
         cmd << config.extra_rsync_options if !config.extra_rsync_options.nil?
         cmd << "/tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
-        local cmd
+        run_now! cmd
       end
 
-      job :setup_db do
+      task :setup_db, true do
         remote "cd #{config.current_path}"
         remote "bundle exec padrino rake dm:create -e #{config.env}"
       end
 
-      job :unpack do
+      task :unpack, true do
         release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
         file_exists "/tmp/#{config.app_name}.tar.bz2",
           [
@@ -58,7 +58,7 @@ module Deploy
           remote "find #{config.shared_path}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
       end
 
-      job :link do
+      task :link, true do
         remote "for i in $( ls -rl -m1 #{config.releases_path} ); do LATEST_RELEASE=$i; break; done"
 
         link_exists(config.current_path, [ "rm #{config.current_path}" ])
@@ -68,14 +68,14 @@ module Deploy
         link_not_exists("#{config.shared_path}/tmp", ["ln -s #{config.shared_path}/tmp #{config.releases_path}/$LATEST_RELEASE/tmp"])
       end
 
-      job :bundle do
+      task :bundle, true do
         remote "source /usr/local/lib/rvm"
         remote "rvm rvmrc trust #{config.app_root}"
         remote "cd #{config.current_path}"
         remote "bundle install --without test development --deployment"
       end
 
-      job :clean_up do
+      task :clean_up, true do
         remote "cd #{config.releases_path}"
         remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
         remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
@@ -86,17 +86,17 @@ module Deploy
           ]
       end
 
-      job :auto_upgrade do
+      task :auto_upgrade, true do
         remote "cd #{config.current_path}"
         remote "bundle exec padrino rake dm:auto:upgrade -e #{config.env}"
       end
 
-      job :auto_migrate do
+      task :auto_migrate, true do
         remote "cd #{config.current_path}"
         remote "bundle exec padrino rake dm:auto:migrate -e #{config.env}"
       end
 
-      job :restart do
+      task :restart, true do
         remote "touch #{config.current_path}/tmp/restart.txt"
       end
 

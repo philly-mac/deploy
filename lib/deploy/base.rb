@@ -1,36 +1,49 @@
 module Deploy
   module Base
-    attr_accessor :remote_commands
+    attr_accessor :commands
 
-    def remote_commands
-      @remote_commands ||= []
+    def commands
+      @commands ||= []
     end
 
     def remote(command)
-      self.remote_commands << command
+      self.commands << [:remote, command]
     end
 
     def local(command)
-      puts "LOCAL: #{command}" if config.verbose
+      self.commands << [:local, command]
+    end
+
+    def run_now!(command)
+      puts "EXECUTING: #{command}" if config.verbose
       system command unless config.dry_run
     end
 
     def push!
-      unless self.remote_commands.empty?
-        r_commands = self.remote_commands.map do |r_command|
-          puts "REMOTE: #{r_command}" if config.verbose
-          r_command
-        end.join("; ")
+      unless self.commands.empty?
+        all_commands = self.commands.map do |command|
+          if command.first == :local
+            puts "LOCAL: #{command.last}" if config.verbose
+            eval command.last
+            nil
+          elsif command.first == :remote
+            puts "REMOTE: #{command.last}" if config.verbose
+            command.last
+          end
+        end
+
+        all_commands = all_commands.compact.join("; ")
+
         cmd = "ssh "
         cmd << "#{config.extra_ssh_options} " if !config.extra_ssh_options.nil?
         cmd << "#{config.username}@#{config.remote} "
         cmd << "'"
         cmd << "#{config.after_login}; " if !config.after_login.nil?
-        cmd << "#{r_commands}"
+        cmd << "#{all_commands}"
         cmd << "'"
-        local cmd
+        run_now! cmd
         puts "\n"
-        self.remote_commands = []
+        self.commands = []
       end
     end
   end

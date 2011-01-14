@@ -9,33 +9,27 @@ module Deploy
 
         attr_accessor :base_deploy_actions
 
-        def task(method_name)
-          if block_given?
-            eigenklazz.instance_eval do
-              define_method(method_name) do |*args|
-                puts "\n*** #{method_name} ***" if config.verbose
-                yield(*args)
-              end
-            end
-          end
+        def eigenklazz
+          (class << self; self; end)
         end
 
-        def job(method_name)
+        def task(method_name, delay_option = false)
           if block_given?
             eigenklazz.instance_eval do
               define_method(method_name) do |*args|
                 puts "\n*** #{method_name} ***" if config.verbose
-                delay_push = args.first
-                delay_push ||= false
-                yield
+                delay_push = false
+                if delay_option
+                  delay_push = args.first if args.size > 0
+                  yield
+                else
+                  yield(*args)
+                  push!
+                end
                 push! unless delay_push
               end
             end
           end
-        end
-
-        def eigenklazz
-          (class << self; self; end)
         end
 
         def set_base_deploy_actions(actions)

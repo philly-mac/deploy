@@ -5,22 +5,23 @@ module Deploy
   module Recipes
     class Protonet < ::Deploy::Recipes::Base
 
-      task :create_directory |dir_name, permissions|
+      task :create_directory do |dir_name, permissions|
         permissions ||= nil
         FileUtils.mkdir_p dir_name
         FileUtils.chmod permissions, dir_name if permissions
       end
 
-      task :latest_deploy
+      task :latest_deploy do
         Dir["#{config.releases_path}/*"].sort.last
       end
 
-      task :monit_command(command = "")
+      task :monit_command do |command|
+        command ||= ''
         puts "\nrunning monit command #{command}"
-        local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
+        run_now! "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
       end
 
-      task :bundle_cleanup
+      task :bundle_cleanup do
         "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE"
       end
 
@@ -55,7 +56,7 @@ module Deploy
           f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
         end
 
-        local "chmod 700 #{config.shared_path}/config/monit_ptn_node"
+        run_now! "chmod 700 #{config.shared_path}/config/monit_ptn_node"
 
         # and restart monit
         monit_command "quit"
@@ -104,9 +105,9 @@ module Deploy
 
       task :setup_db do
         FileUtils.cd latest_deploy do
-          db_exists = local("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
+          db_exists = run_now!("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
           if !db_exists
-            puts "db not found, creating: #{ local("#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
+            puts "db not found, creating: #{ run_now!("#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
           end
         end
       end
@@ -119,8 +120,8 @@ module Deploy
 
       task :get_code_and_unpack do
         FileUtils.cd "/tmp"
-        local "rm -f /tmp/dashboard.tar.gz"
-        local("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
+        run_now! "rm -f /tmp/dashboard.tar.gz"
+        run_now!("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
       end
 
       task :release_dir do
@@ -132,10 +133,10 @@ module Deploy
         if File.exists?("/tmp/dashboard.tar.gz")
           FileUtils.cd "/tmp"
           FileUtils.rm_rf "/tmp/dashboard"
-          local "tar -xzf #{"/tmp/dashboard.tar.gz"}"
+          run_now! "tar -xzf #{"/tmp/dashboard.tar.gz"}"
           release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
           FileUtils.mkdir_p release_timestamp
-          local "mv /tmp/dashboard/* #{release_timestamp}"
+          run_now! "mv /tmp/dashboard/* #{release_timestamp}"
         end
       end
 
@@ -159,13 +160,13 @@ module Deploy
 
         FileUtils.cd latest_deploy
 
-        local "#{bundle_cleanup}; bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
+        run_now! "#{bundle_cleanup}; bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
 
       end
 
       task :migrate do
         FileUtils.cd latest_deploy
-        local "#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
+        run_now! "#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
       end
 
       task :link_current do
