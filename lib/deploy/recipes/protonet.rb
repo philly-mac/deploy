@@ -5,24 +5,25 @@ module Deploy
   module Recipes
     class Protonet < ::Deploy::Recipes::Base
 
-      task :create_directory do |dir_name, permissions|
-        permissions ||= nil
-        FileUtils.mkdir_p dir_name
-        FileUtils.chmod permissions, dir_name if permissions
-      end
+      class << self
+        def create_directory(dir_name, permissions = nil)
+          FileUtils.mkdir_p dir_name
+          FileUtils.chmod permissions, dir_name if permissions
+        end
 
-      task :latest_deploy do
-        Dir["#{config.releases_path}/*"].sort.last
-      end
+        def latest_deploy
+          Dir["#{config.releases_path}/*"].sort.last
+        end
 
-      task :monit_command do |command|
-        command ||= ''
-        puts "\nrunning monit command #{command}"
-        run_now! "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
-      end
+        def monit_command(command = "")
+          puts "\nrunning monit command #{command}"
+          run_now! "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
+        end
 
-      task :bundle_cleanup do
-        "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE"
+        def bundle_cleanup
+          "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE"
+        end
+
       end
 
       task :setup do
