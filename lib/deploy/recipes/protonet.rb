@@ -5,25 +5,23 @@ module Deploy
   module Recipes
     class Protonet < ::Deploy::Recipes::Base
 
-      class << self
-        def create_directory(dir_name, permissions = nil)
-          FileUtils.mkdir_p dir_name
-          FileUtils.chmod permissions, dir_name if permissions
-        end
+      task :create_directory |dir_name, permissions|
+        permissions ||= nil
+        FileUtils.mkdir_p dir_name
+        FileUtils.chmod permissions, dir_name if permissions
+      end
 
-        def latest_deploy
-          Dir["#{config.releases_path}/*"].sort.last
-        end
+      task :latest_deploy
+        Dir["#{config.releases_path}/*"].sort.last
+      end
 
-        def monit_command(command = "")
-          puts "\nrunning monit command #{command}"
-          local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
-        end
+      task :monit_command(command = "")
+        puts "\nrunning monit command #{command}"
+        local "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
+      end
 
-        def bundle_cleanup
-          "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE"
-        end
-
+      task :bundle_cleanup
+        "unset RUBYOPT;unset GEM_HOME; unset GEM_PATH; unset BUNDLE_GEMFILE"
       end
 
       task :setup do
@@ -48,7 +46,7 @@ module Deploy
       end
 
 
-      job :deploy_monit do
+      task :deploy_monit do
         # variables for erb
         shared_path   = config.shared_path
         current_path  = config.current_path
@@ -70,11 +68,11 @@ module Deploy
       end
 
       # todo: replace by app configuration & remove
-      job :copy_stage_config do
+      task :copy_stage_config do
         run "if [ -f #{release_path}/config/stage_configs/#{stage}.rb ]; then cp #{release_path}/config/stage_configs/#{stage}.rb #{release_path}/config/environments/stage.rb; fi"
       end
 
-      job :create_directories do
+      task :create_directories do
         create_directory "#{config.shared_path}/log"
         create_directory "#{config.shared_path}/db"
         create_directory "#{config.shared_path}/system"
@@ -91,7 +89,7 @@ module Deploy
         create_directory "#{config.shared_path}/avatars", 0770
       end
 
-      job :link_shared_directories do
+      task :link_shared_directories do
         FileUtils.rm_rf   "#{latest_deploy}/log"
         FileUtils.rm_rf   "#{latest_deploy}/public/system"
         FileUtils.rm_rf   "#{latest_deploy}/tmp/pids"
@@ -104,7 +102,7 @@ module Deploy
       end
 
 
-      job :setup_db do
+      task :setup_db do
         FileUtils.cd latest_deploy do
           db_exists = local("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
           if !db_exists
@@ -113,23 +111,23 @@ module Deploy
         end
       end
 
-      job :prepare_code do
+      task :prepare_code do
         create_directories
         get_code_and_unpack
         link_shared_directories
       end
 
-      job :get_code_and_unpack do
+      task :get_code_and_unpack do
         FileUtils.cd "/tmp"
         local "rm -f /tmp/dashboard.tar.gz"
         local("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
       end
 
-      job :release_dir do
+      task :release_dir do
         FileUtils.mkdir_p config.releases_path if !File.exists? config.releases_path
       end
 
-      job :unpack do
+      task :unpack do
         release_dir
         if File.exists?("/tmp/dashboard.tar.gz")
           FileUtils.cd "/tmp"
@@ -141,7 +139,7 @@ module Deploy
         end
       end
 
-      job :clean_up do
+      task :clean_up do
         all_releases = Dir["#{config.releases_path}/*"].sort
         if (num_releases = all_releases.size) >= config.max_num_releases
           num_to_delete = num_releases - config.max_num_releases
@@ -152,7 +150,7 @@ module Deploy
         end
       end
 
-      job :bundle do
+      task :bundle do
         shared_dir  = File.expand_path('bundle', config.shared_path)
         release_dir = File.expand_path('.bundle', latest_deploy)
 
@@ -165,21 +163,21 @@ module Deploy
 
       end
 
-      job :migrate do
+      task :migrate do
         FileUtils.cd latest_deploy
         local "#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
       end
 
-      job :link_current do
+      task :link_current do
         FileUtils.rm_f config.current_path
         FileUtils.ln_s latest_deploy, config.current_path
       end
 
-      job :restart_apache do
+      task :restart_apache do
         FileUtils.touch "#{config.current_path}/tmp/restart.txt"
       end
 
-      job :restart_services do
+      task :restart_services do
         monit_command "-g daemons restart all"
       end
 
