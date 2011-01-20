@@ -15,18 +15,17 @@ module Deploy
 
         # Assaign the parsed options to local variables
         recipe         = options[:recipe]
-        config.env     = options[:environment]
         method         = options[:method]
         config_file    = options[:config]
-        config.dry_run = options[:dry]
-        config.verbose = !options[:quiet]
 
-        config.verbose = true if config.dry_run
+        config.set :env,     options[:environment]
+        config.set :dry_run, options[:dry]
+        config.set :verbose, config.get(:dry_run) ? true : !options[:quiet]
 
         # Set the configuration options
-        config.deploy_root   = "/var/www"
-        config.app_name      = "test"
-        config.shell         = "/bin/bash"
+        config.set :deploy_root, "/var/www"
+        config.set :app_name,    "test"
+        config.set :shell,       "/bin/bash"
 
         config_environment
         custom_config(config_file) if config_file
@@ -38,8 +37,8 @@ module Deploy
         recipe_clazz = nil
         begin
           # Check if we are using an alias
-          alias_recipe = Deploy::RecipeMap.recipe_clazz(recipe)
-          recipe = alias_recipe if alias_recipe != recipe
+          alias_recipe = config.get_clazz(recipe)
+          recipe = alias_recipe if alias_recipe && alias_recipe != recipe
 
           require "deploy/recipes/#{recipe}"
           recipe_clazz = eval("::Deploy::Recipes::#{recipe.camelize}")
@@ -54,29 +53,19 @@ module Deploy
           require custom_recipe
           recipe_clazz = eval("::#{recipe.camelize}")
         end
-        if recipe_clazz
-          recipe_clazz.send(method.to_sym)
-          recipe_clazz.push!
-        end
+
+        recipe_clazz.send(method.to_sym) if recipe_clazz
 
         return 0
       end
 
       def map_default_recipes
-        Deploy::RecipeMap.map("padrino_data_mapper", "pdm")
-        Deploy::RecipeMap.map("protonet", "pn")
-        Deploy::RecipeMap.map("rails", "r")
-      end
-
-      def set_paths!
-        config.app_root      = "#{config.deploy_root}/#{config.app_name}"
-        config.current_path  = "#{config.app_root}/current"
-        config.shared_path   = "#{config.app_root}/shared"
-        config.releases_path = "#{config.app_root}/releases"
+        config.set_clazz "pdm", "padrino_data_mapper"
+        config.set_clazz "pn",  "protonet"
       end
 
       def config_environment
-        load_config("#{VIRTUAL_APP_ROOT}/deploy/environments/#{config.env}.rb")
+        load_config("#{VIRTUAL_APP_ROOT}/deploy/environments/#{config.get(:env)}.rb")
       end
 
       def custom_config(file)
@@ -96,8 +85,15 @@ module Deploy
         set_paths!
       end
 
-      def set(key, value)
-        config.configure_from_hash({key => value})
+      def set_paths!
+        config.set :app_root,      "#{config.get(:deploy_root)}/#{config.get(:app_name)}"
+        config.set :current_path,  "#{config.get(:app_root)}/current"
+        config.set :shared_path,   "#{config.get(:app_root)}/shared"
+        config.set :releases_path, "#{config.get(:app_root)}/releases"
+      end
+
+      def set(key,value)
+        config.set(key,value)
       end
 
     end

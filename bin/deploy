@@ -12,7 +12,7 @@ $: << "#{APP_ROOT}/lib"
 require "deploy"
 
 def config
-  configatron
+  Deploy::Config
 end
 
 # Parse the options

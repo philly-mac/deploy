@@ -12,13 +12,13 @@ module Deploy
       end
 
       task :latest_deploy do
-        Dir["#{config.releases_path}/*"].sort.last
+        Dir["#{config.get(:releases_path)}/*"].sort.last
       end
 
       task :monit_command do |command|
         command ||= ''
         puts "\nrunning monit command #{command}"
-        run_now! "/usr/sbin/monit -c #{config.shared_path}/config/monit_ptn_node -l #{config.shared_path}/log/monit.log -p #{config.shared_path}/pids/monit.pid #{command}"
+        run_now! "/usr/sbin/monit -c #{config.get(:shared_path)}/config/monit_ptn_node -l #{config.get(:shared_path)}/log/monit.log -p #{config.get(:shared_path)}/pids/monit.pid #{command}"
       end
 
       task :bundle_cleanup do
@@ -49,14 +49,14 @@ module Deploy
 
       task :deploy_monit do
         # variables for erb
-        shared_path   = config.shared_path
-        current_path  = config.current_path
+        shared_path   = config.get(:shared_path)
+        current_path  = config.get(:current_path)
 
-        File.open("#{config.shared_path}/config/monit_ptn_node", 'w') do |f|
+        File.open("#{config.get(:shared_path)}/config/monit_ptn_node", 'w') do |f|
           f.write(ERB.new(IO.read("#{latest_deploy}/config/monit/monit_ptn_node.erb")).result(binding))
         end
 
-        run_now! "chmod 700 #{config.shared_path}/config/monit_ptn_node"
+        run_now! "chmod 700 #{config.get(:shared_path)}/config/monit_ptn_node"
 
         # and restart monit
         monit_command "quit"
@@ -74,20 +74,20 @@ module Deploy
       end
 
       task :create_directories do
-        create_directory "#{config.shared_path}/log"
-        create_directory "#{config.shared_path}/db"
-        create_directory "#{config.shared_path}/system"
-        create_directory "#{config.shared_path}/config/monit.d"
-        create_directory "#{config.shared_path}/config/hostapd.d"
-        create_directory "#{config.shared_path}/config/dnsmasq.d"
-        create_directory "#{config.shared_path}/config/ifconfig.d"
-        create_directory "#{config.shared_path}/config/protonet.d"
-        create_directory "#{config.shared_path}/externals/screenshots"
-        create_directory "#{config.shared_path}/externals/image_proxy"
-        create_directory "#{config.shared_path}/solr/data"
-        create_directory "#{config.shared_path}/user-files", 0770
-        create_directory "#{config.shared_path}/pids", 0770
-        create_directory "#{config.shared_path}/avatars", 0770
+        create_directory "#{config.get(:shared_path)}/log"
+        create_directory "#{config.get(:shared_path)}/db"
+        create_directory "#{config.get(:shared_path)}/system"
+        create_directory "#{config.get(:shared_path)}/config/monit.d"
+        create_directory "#{config.get(:shared_path)}/config/hostapd.d"
+        create_directory "#{config.get(:shared_path)}/config/dnsmasq.d"
+        create_directory "#{config.get(:shared_path)}/config/ifconfig.get(:d"
+        create_directory "#{config.get(:shared_path)}/config/protonet.d"
+        create_directory "#{config.get(:shared_path)}/externals/screenshots"
+        create_directory "#{config.get(:shared_path)}/externals/image_proxy"
+        create_directory "#{config.get(:shared_path)}/solr/data"
+        create_directory "#{config.get(:shared_path)}/user-files", 0770
+        create_directory "#{config.get(:shared_path)}/pids", 0770
+        create_directory "#{config.get(:shared_path)}/avatars", 0770
       end
 
       task :link_shared_directories do
@@ -96,18 +96,18 @@ module Deploy
         FileUtils.rm_rf   "#{latest_deploy}/tmp/pids"
         FileUtils.mkdir_p "#{latest_deploy}/public"
         FileUtils.mkdir_p "#{latest_deploy}/tmp"
-        FileUtils.ln_s    "#{config.shared_path}/log",        "#{latest_deploy}/log"
-        FileUtils.ln_s    "#{config.shared_path}/system",     "#{latest_deploy}/public/system"
-        FileUtils.ln_s    "#{config.shared_path}/pids",       "#{latest_deploy}/tmp/pids"
-        FileUtils.ln_s    "#{config.shared_path}/externals",  "#{latest_deploy}/public/externals"
+        FileUtils.ln_s    "#{config.get(:shared_path)}/log",        "#{latest_deploy}/log"
+        FileUtils.ln_s    "#{config.get(:shared_path)}/system",     "#{latest_deploy}/public/system"
+        FileUtils.ln_s    "#{config.get(:shared_path)}/pids",       "#{latest_deploy}/tmp/pids"
+        FileUtils.ln_s    "#{config.get(:shared_path)}/externals",  "#{latest_deploy}/public/externals"
       end
 
 
       task :setup_db do
         FileUtils.cd latest_deploy do
-          db_exists = run_now!("mysql -u root #{config.database_name} -e 'show tables;' 2>&1 > /dev/null")
+          db_exists = run_now!("mysql -u root #{config.get(:database_name)} -e 'show tables;' 2>&1 > /dev/null")
           if !db_exists
-            puts "db not found, creating: #{ run_now!("#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
+            puts "db not found, creating: #{ run_now!("#{bundle_cleanup}; export RAILS_ENV=#{config.get(:env)}; bundle exec rake db:setup") ? "success!" : "FAIL!"}"
           end
         end
       end
@@ -121,11 +121,11 @@ module Deploy
       task :get_code_and_unpack do
         FileUtils.cd "/tmp"
         run_now! "rm -f /tmp/dashboard.tar.gz"
-        run_now!("wget http://releases.protonet.info/release/get/#{config.key} -O dashboard.tar.gz") && unpack
+        run_now!("wget http://releases.protonet.info/release/get/#{config.get(:key)} -O dashboard.tar.gz") && unpack
       end
 
       task :release_dir do
-        FileUtils.mkdir_p config.releases_path if !File.exists? config.releases_path
+        FileUtils.mkdir_p config.get(:releases_path) if !File.exists? config.get(:releases_path)
       end
 
       task :unpack do
@@ -134,16 +134,16 @@ module Deploy
           FileUtils.cd "/tmp"
           FileUtils.rm_rf "/tmp/dashboard"
           run_now! "tar -xzf #{"/tmp/dashboard.tar.gz"}"
-          release_timestamp = "#{config.releases_path}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
+          release_timestamp = "#{config.get(:releases_path)}/#{Time.now.strftime('%Y%m%d%H%M%S')}"
           FileUtils.mkdir_p release_timestamp
           run_now! "mv /tmp/dashboard/* #{release_timestamp}"
         end
       end
 
       task :clean_up do
-        all_releases = Dir["#{config.releases_path}/*"].sort
-        if (num_releases = all_releases.size) >= config.max_num_releases
-          num_to_delete = num_releases - config.max_num_releases
+        all_releases = Dir["#{config.get(:releases_path)}/*"].sort
+        if (num_releases = all_releases.size) >= config.get(:max_num_releases)
+          num_to_delete = num_releases - config.get(:max_num_releases)
 
           num_to_delete.times do
             FileUtils.rm_rf "#{all_releases.delete_at(0)}"
@@ -152,7 +152,7 @@ module Deploy
       end
 
       task :bundle do
-        shared_dir  = File.expand_path('bundle', config.shared_path)
+        shared_dir  = File.expand_path('bundle', config.get(:shared_path))
         release_dir = File.expand_path('.bundle', latest_deploy)
 
         FileUtils.mkdir_p shared_dir
@@ -166,16 +166,16 @@ module Deploy
 
       task :migrate do
         FileUtils.cd latest_deploy
-        run_now! "#{bundle_cleanup}; export RAILS_ENV=#{config.env}; bundle exec rake db:migrate"
+        run_now! "#{bundle_cleanup}; export RAILS_ENV=#{config.get(:env)}; bundle exec rake db:migrate"
       end
 
       task :link_current do
-        FileUtils.rm_f config.current_path
-        FileUtils.ln_s latest_deploy, config.current_path
+        FileUtils.rm_f config.get(:current_path)
+        FileUtils.ln_s latest_deploy, config.get(:current_path)
       end
 
       task :restart_apache do
-        FileUtils.touch "#{config.current_path}/tmp/restart.txt"
+        FileUtils.touch "#{config.get(:current_path)}/tmp/restart.txt"
       end
 
       task :restart_services do

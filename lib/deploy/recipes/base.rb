@@ -17,7 +17,7 @@ module Deploy
           if block_given?
             eigenklazz.instance_eval do
               define_method(method_name) do |*args|
-                puts "\n*** #{method_name} ***" if config.verbose
+                puts "\n*** #{method_name} ***" if Config.get(:verbose)
                 delay_push = false
                 if delay_option
                   delay_push = args.first if args.size > 0

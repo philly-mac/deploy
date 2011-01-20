@@ -17,68 +17,68 @@ module Deploy
       end
 
       task :create_directories, true do
-        mkdir "#{config.shared_path}/log"
-        mkdir "#{config.shared_path}/config"
-        mkdir "#{config.shared_path}/vendor"
-        mkdir "#{config.shared_path}/tmp"
-        mkdir "#{config.releases_path}"
-        remote "echo \"rvm --create use default@#{config.gemset_name}\" > #{config.app_root}/.rvmrc"
+        mkdir "#{Config.get(:shared_path)}/log"
+        mkdir "#{Config.get(:shared_path)}/config"
+        mkdir "#{Config.get(:shared_path)}/vendor"
+        mkdir "#{Config.get(:shared_path)}/tmp"
+        mkdir "#{Config.get(:releases_path)}"
+        remote "echo \"rvm --create use default@#{Config.get(:gemset_name)}\" > #{Config.get(:app_root)}/.rvmrc"
       end
 
       task :get_and_pack_code, true do
-        run_now! "cd #{config.local_root}"
+        run_now! "cd #{Config.get(:local_root)}"
         run_now! "git pull"
-        run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{config.app_name}.tar.bz2 *"
+        run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{Config.get(:app_name)}.tar.bz2 *"
       end
 
       task :push_code, true do
         cmd = "rsync "
-        cmd << config.extra_rsync_options if !config.extra_rsync_options.nil?
-        cmd << "/tmp/#{config.app_name}.tar.bz2 #{config.username}@#{config.remote}:/tmp/"
+        cmd << Config.get(:extra_rsync_options) unless !Config.get(:extra_rsync_options)
+        cmd << "/tmp/#{Config.get(:app_name)}.tar.bz2 #{Config.get(:username)}@#{Config.get(:remote)}:/tmp/"
         run_now! cmd
       end
 
       task :setup_db, true do
-        remote "cd #{config.current_path}"
-        remote "bundle exec padrino rake dm:create -e #{config.env}"
+        remote "cd #{Config.get(:current_path)}"
+        remote "bundle exec padrino rake dm:create -e #{Config.get(:env)}"
       end
 
       task :unpack, true do
         release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
-        file_exists "/tmp/#{config.app_name}.tar.bz2",
+        file_exists "/tmp/#{Config.get(:app_name)}.tar.bz2",
           [
-            "cd #{config.releases_path}",
+            "cd #{Config.get(:releases_path)}",
             "mkdir #{release_stamp}",
             "cd #{release_stamp}",
-            "tar -xjf /tmp/#{config.app_name}.tar.bz2",
+            "tar -xjf /tmp/#{Config.get(:app_name)}.tar.bz2",
           ]
-          remote "chown -Rf #{config.remote_user}:#{config.remote_group} #{config.app_root}"
-          remote "find #{config.current_path} -type d -exec chmod 775 '{}' \\;"
-          remote "find #{config.current_path} -type f -exec chmod 664 '{}' \\;"
-          remote "find #{config.shared_path}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
+          remote "chown -Rf #{Config.get(:remote_user)}:#{Config.get(:remote_group)} #{Config.get(:app_root)}"
+          remote "find #{Config.get(:current_path)} -type d -exec chmod 775 '{}' \\;"
+          remote "find #{Config.get(:current_path)} -type f -exec chmod 664 '{}' \\;"
+          remote "find #{Config.get(:shared_path)}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
       end
 
       task :link, true do
-        remote "for i in $( ls -rl -m1 #{config.releases_path} ); do LATEST_RELEASE=$i; break; done"
+        remote "for i in $( ls -rl -m1 #{Config.get(:releases_path)} ); do LATEST_RELEASE=$i; break; done"
 
-        link_exists(config.current_path, [ "rm #{config.current_path}" ])
-        link_not_exists("#{config.releases_path}/$LATEST_RELEASE", ["ln -s #{config.releases_path}/$LATEST_RELEASE #{config.current_path}"])
-        link_not_exists("#{config.shared_path}/log", ["ln -s #{config.shared_path}/log #{config.releases_path}/$LATEST_RELEASE/log"])
-        link_not_exists("#{config.shared_path}/vendor", ["ln -s #{config.shared_path}/vendor #{config.releases_path}/$LATEST_RELEASE/vendor"])
-        link_not_exists("#{config.shared_path}/tmp", ["ln -s #{config.shared_path}/tmp #{config.releases_path}/$LATEST_RELEASE/tmp"])
+        link_exists(Config.get(:current_path), [ "rm #{Config.get(:current_path)}" ])
+        link_not_exists("#{Config.get(:releases_path)}/$LATEST_RELEASE", ["ln -s #{Config.get(:releases_path)}/$LATEST_RELEASE #{Config.get(:current_path)}"])
+        link_not_exists("#{Config.get(:shared_path)}/log", ["ln -s #{Config.get(:shared_path)}/log #{Config.get(:releases_path)}/$LATEST_RELEASE/log"])
+        link_not_exists("#{Config.get(:shared_path)}/vendor", ["ln -s #{Config.get(:shared_path)}/vendor #{Config.get(:releases_path)}/$LATEST_RELEASE/vendor"])
+        link_not_exists("#{Config.get(:shared_path)}/tmp", ["ln -s #{Config.get(:shared_path)}/tmp #{Config.get(:releases_path)}/$LATEST_RELEASE/tmp"])
       end
 
       task :bundle, true do
         remote "source /usr/local/lib/rvm"
-        remote "rvm rvmrc trust #{config.app_root}"
-        remote "cd #{config.current_path}"
+        remote "rvm rvmrc trust #{Config.get(:app_root)}"
+        remote "cd #{Config.get(:current_path)}"
         remote "bundle install --without test development --deployment"
       end
 
       task :clean_up, true do
-        remote "cd #{config.releases_path}"
+        remote "cd #{Config.get(:releases_path)}"
         remote "export NUM_RELEASES=`ls -trl -m1 | wc -l`"
-        remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{config.max_num_releases} ))"
+        remote "export NUM_TO_REMOVE=$(( $NUM_RELEASES - #{Config.get(:max_num_releases)} ))"
         remote "export COUNTER=1"
         on_good_exit "[[ $NUM_TO_REMOVE =~ ^[0-9]+$ ]] && [[ $COUNTER =~ ^[0-9]+$ ]] && [[ $NUM_TO_REMOVE -ge 1 ]]",
           [
@@ -87,17 +87,17 @@ module Deploy
       end
 
       task :auto_upgrade, true do
-        remote "cd #{config.current_path}"
-        remote "bundle exec padrino rake dm:auto:upgrade -e #{config.env}"
+        remote "cd #{Config.get(:current_path)}"
+        remote "bundle exec padrino rake dm:auto:upgrade -e #{Config.get(:env)}"
       end
 
       task :auto_migrate, true do
-        remote "cd #{config.current_path}"
-        remote "bundle exec padrino rake dm:auto:migrate -e #{config.env}"
+        remote "cd #{Config.get(:current_path)}"
+        remote "bundle exec padrino rake dm:auto:migrate -e #{Config.get(:env)}"
       end
 
       task :restart, true do
-        remote "touch #{config.current_path}/tmp/restart.txt"
+        remote "touch #{Config.get(:current_path)}/tmp/restart.txt"
       end
 
     end

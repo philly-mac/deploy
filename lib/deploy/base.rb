@@ -15,19 +15,19 @@ module Deploy
     end
 
     def run_now!(command)
-      puts "EXECUTING: #{command}" if config.verbose
-      system command unless config.dry_run
+      puts "EXECUTING: #{command}" if config.get(:verbose)
+      system command unless config.get(:dry_run)
     end
 
     def push!
       unless self.commands.empty?
         all_commands = self.commands.map do |command|
           if command.first == :local
-            puts "LOCAL: #{command.last}" if config.verbose
+            puts "LOCAL: #{command.last}" if config.get(:verbose)
             eval command.last
             nil
           elsif command.first == :remote
-            puts "REMOTE: #{command.last}" if config.verbose
+            puts "REMOTE: #{command.last}" if config.get(:verbose)
             command.last
           end
         end
@@ -35,10 +35,10 @@ module Deploy
         all_commands = all_commands.compact.join("; ")
 
         cmd = "ssh "
-        cmd << "#{config.extra_ssh_options} " if !config.extra_ssh_options.nil?
-        cmd << "#{config.username}@#{config.remote} "
+        cmd << "#{config.get(:extra_ssh_options)} " unless config.get(:extra_ssh_options)
+        cmd << "#{config.get(:username)}@#{config.get(:remote)} "
         cmd << "'"
-        cmd << "#{config.after_login}; " if !config.after_login.nil?
+        cmd << "#{config.get(:after_login)}; " unless config.get(:after_login)
         cmd << "#{all_commands}"
         cmd << "'"
         run_now! cmd
