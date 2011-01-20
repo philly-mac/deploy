@@ -12,7 +12,7 @@ module Deploy
         end
 
         def latest_deploy
-          Dir["#{config.releases_path}/*"].sort.last
+          Dir["#{config.get(:releases_path)}/*"].sort.last
         end
 
         def monit_command(command = "")
