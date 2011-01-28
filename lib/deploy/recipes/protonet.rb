@@ -161,7 +161,7 @@ module Deploy
 
         FileUtils.cd latest_deploy
 
-        run_now! "#{bundle_cleanup}; bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without test --without cucumber\" ; fi"
+        run_now! "#{bundle_cleanup}; bundle check 2>&1 > /dev/null ; if [ $? -ne 0 ] ; then sh -c \"bundle install --without=test:cucumber\" ; fi"
 
       end
 
