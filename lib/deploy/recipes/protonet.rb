@@ -81,7 +81,7 @@ module Deploy
         create_directory "#{config.get(:shared_path)}/config/monit.d"
         create_directory "#{config.get(:shared_path)}/config/hostapd.d"
         create_directory "#{config.get(:shared_path)}/config/dnsmasq.d"
-        create_directory "#{config.get(:shared_path)}/config/ifconfig.get(:d"
+        create_directory "#{config.get(:shared_path)}/config/ifconfig.d"
         create_directory "#{config.get(:shared_path)}/config/protonet.d"
         create_directory "#{config.get(:shared_path)}/externals/screenshots"
         create_directory "#{config.get(:shared_path)}/externals/image_proxy"
