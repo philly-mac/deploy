@@ -1,9 +1,14 @@
-class String
-  def camelize
-    indexes = [0]
-    self.size.times { |i| indexes << (i + 1) if self[i,1] == '_' }
-    indexes.each    { |i| self[i] = self[i,1].upcase }
-    self.gsub("_", "")
+module Deploy
+  class Util
+    class << self
+
+      def camelize(string)
+        indexes = [0]
+        string.size.times { |i| indexes << (i + 1) if string[i,1] == '_' }
+        indexes.each    { |i| string[i] = string[i,1].upcase }
+        string.gsub("_", "")
+      end
+
+    end
   end
 end
-
