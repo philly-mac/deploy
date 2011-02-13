@@ -1,0 +1,69 @@
+Bacon
+- should have should.satisfy
+- should have should.equal
+- should have should.raise
+- should have should.raise with a block
+- should have a should.raise should return the exception
+- should have should.be.an.instance_of
+- should have should.be.nil
+- should have should.include
+- should have should.be.a.kind_of
+- should have should.match
+- should have should.not.raise
+- should have should.throw
+- should have should.not.satisfy
+- should have should.not.equal
+- should have should.not.match
+- should have should.be.identical_to/same_as
+- should have should.respond_to
+- should have should.be.close
+- should support multiple negation
+- should have should.<predicate>
+- should have should <operator> (>, >=, <, <=, ===)
+- should allow for custom shoulds
+- should have should.flunk
+
+before/after
+- should run in the right order
+when nested
+- should run from higher level
+- should run at the nested level
+- should run in the right order
+
+- should not run from lower level
+when nested at a sibling level
+- should not run from sibling level
+
+
+shared/behaves_like
+- gets called where it is included
+- raises NameError when the context is not found
+- gets called where it is included
+- can access data
+
+describe arguments
+- should work with stringstring
+
+
+- should work with symbolsbehaviour
+
+
+- should work with modulesBacon
+
+
+- should work with namespaced modulesBacon::Context
+
+
+- should work with multiple argumentsBacon::Context empty
+
+
+
+#should shortcut for #it('should')
+- should be called
+- should save some characters by typing should
+- should save characters even on failure
+- should work nested
+- should add new specifications
+- should have been called
+
+44 specifications (375 requirements), 0 failures, 0 errors
