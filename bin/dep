@@ -15,18 +15,27 @@ def config
   Deploy::Config
 end
 
-# Parse the options
+command = ARGV.join(' ')
 options = {}
-op = OptionParser.new do |opts|
-  opts.banner = "Usage: example.rb [options]"
-  opts.on("-r", "--recipe RECIPE", "The recipe file")             { |r| options[:recipe]      = r }
-  opts.on("-e", "--environment ENV", "Environment to execute in") { |e| options[:environment] = e }
-  opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method]      = m }
-  opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config]      = c }
-  opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
-  opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]       = q }
-end
-op.parse!
 
-exit ::Deploy::Setup.init(options, op.summarize)
+if match_data = (/^(.+)\s(.+):(.+)/.match(command))
+  options[:environment] = match_data[1]
+  options[:recipe]      = match_data[2]
+  options[:method]      = match_data[3]
+  exit ::Deploy::Setup.init(options, '')
+else
+  # Parse the options
+  op = OptionParser.new do |opts|
+    opts.banner = "Usage: example.rb [options]"
+    opts.on("-r", "--recipe RECIPE", "The recipe file")             { |r| options[:recipe]      = r }
+    opts.on("-e", "--environment ENV", "Environment to execute in") { |e| options[:environment] = e }
+    opts.on("-m", "--method METHOD", "The method to run")           { |m| options[:method]      = m }
+    opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config]      = c }
+    opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
+    opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]       = q }
+  end
+  op.parse!
+  exit ::Deploy::Setup.init(options, op.summarize)
+end
+
 
