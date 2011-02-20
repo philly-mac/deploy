@@ -61,6 +61,7 @@ module Deploy
 
       def map_default_recipes
         config.set_clazz "pdm", "padrino_data_mapper"
+        config.set_clazz "rdm", "rails_data_mapper"
         config.set_clazz "pn",  "protonet"
       end
 
