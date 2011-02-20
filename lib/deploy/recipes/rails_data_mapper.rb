@@ -40,7 +40,7 @@ module Deploy
 
       task :setup_db, true do
         remote "cd #{Config.get(:current_path)}"
-        remote "bundle exec rake dm:create RAILS_ENV=#{Config.get(:env)}"
+        remote "bundle exec rake db:create RAILS_ENV=#{Config.get(:env)}"
       end
 
       task :unpack, true do
@@ -88,7 +88,7 @@ module Deploy
 
       task :auto_upgrade, true do
         remote "cd #{Config.get(:current_path)}"
-        remote "bundle exec rake dm:autoupgrade RAILS_ENV=#{Config.get(:env)}"
+        remote "bundle exec rake db:autoupgrade RAILS_ENV=#{Config.get(:env)}"
       end
 
       task :auto_migrate, true do
