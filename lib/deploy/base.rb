@@ -35,10 +35,10 @@ module Deploy
         all_commands = all_commands.compact.join("; ")
 
         cmd = "ssh "
-        cmd << "#{config.get(:extra_ssh_options)} " unless config.get(:extra_ssh_options)
+        cmd << "#{config.get(:extra_ssh_options)} " if config.get(:extra_ssh_options)
         cmd << "#{config.get(:username)}@#{config.get(:remote)} "
         cmd << "'"
-        cmd << "#{config.get(:after_login)}; " unless config.get(:after_login)
+        cmd << "#{config.get(:after_login)}; " if config.get(:after_login)
         cmd << "#{all_commands}"
         cmd << "'"
         run_now! cmd
