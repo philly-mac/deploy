@@ -7,41 +7,23 @@ module Deploy
 
       class << self
 
-        attr_accessor :base_deploy_actions
-
-        def eigenklazz
-          (class << self; self; end)
+        def actions=(actions)
+          @@actions = actions
         end
 
-        def task(method_name, delay_option = false)
-          if block_given?
-            eigenklazz.instance_eval do
-              define_method(method_name) do |*args|
-                puts "\n*** #{method_name} ***" if Config.get(:verbose)
-                delay_push = false
-                if delay_option
-                  delay_push = args.first if args.size > 0
-                  yield
-                else
-                  yield(*args)
-                  push!
-                end
-                push! unless delay_push
-              end
-            end
-          end
+        def actions
+          @@actions ||= []
+          @@actions
         end
 
-        def set_base_deploy_actions(actions)
-          self.base_deploy_actions = actions
-        end
-
-        def base_deploy(after_spec = nil)
-          base_deploy_actions.each do |action|
+        def run_actions(after_spec = nil)
+          actions.each do |action|
+            puts "\n*** #{action} ***" if Config.get(:verbose)
             self.send action
+            push!
             if after_spec && after_spec[:after] == action
               after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
-              after_spec[:actions].each{|as_action| self.send(as_action) }
+              after_spec[:actions].each{|as_action| self.send(as_action); push! }
             end
           end
         end

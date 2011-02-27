@@ -34,28 +34,28 @@ module Deploy
         map_default_recipes
 
         # Load the recipe
+        # TODO: Add a custom clazz option so that people can specify the class from the custom recipe
         recipe_clazz = nil
-        begin
-          # Check if we are using an alias
-          alias_recipe = config.get_clazz(recipe)
-          recipe = alias_recipe if alias_recipe && alias_recipe != recipe
-
-          require "deploy/recipes/#{recipe}"
-          recipe_clazz = eval("::Deploy::Recipes::#{::Deploy::Util.camelize(recipe)}")
-        rescue Exception => e
-          puts "Error: #{e}"
-          # The recipe that was specified does not exist in the default recipes
-        end
-
         custom_recipe = "#{VIRTUAL_APP_ROOT}/deploy/recipes/#{recipe}.rb"
 
         if File.exists?(custom_recipe)
           require custom_recipe
           recipe_clazz = eval("::#{::Deploy::Util.camelize(recipe)}")
+        else
+          begin
+            # Check if we are using an alias
+            alias_recipe = config.get_clazz(recipe)
+            recipe = alias_recipe if alias_recipe && alias_recipe != recipe
+
+            require "deploy/recipes/#{recipe}"
+            recipe_clazz = eval("::Deploy::Recipes::#{::Deploy::Util.camelize(recipe)}")
+          rescue Exception => e
+            puts "Error: #{e}"
+            # The recipe that was specified does not exist in the default recipes
+          end
         end
 
         recipe_clazz.send(method.to_sym) if recipe_clazz
-
         return 0
       end
 
