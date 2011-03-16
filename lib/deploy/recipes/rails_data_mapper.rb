@@ -2,8 +2,6 @@ module Deploy
   module Recipes
     class RailsDataMapper < ::Deploy::Recipes::Base
 
-      self.actions = [:get_and_pack_code, :push_code, :unpack, :link, :bundle, :clean_up, :restart]
-
       class << self
 
         def setup
@@ -11,11 +9,32 @@ module Deploy
         end
 
         def deploy_create
-          run_actions({:after => :bundle, :actions => [:setup_db, :auto_migrate]})
+          self.actions = [
+            :get_and_pack_code,
+            :push_code,
+            :unpack,
+            :link,
+            :bundle,
+            :setup_db,
+            :auto_migrate,
+            :clean_up,
+            :restart
+          ]
+          run_actions
         end
 
         def deploy
-          run_actions({:after => :bundle, :actions => :auto_upgrade})
+          self.actions = [
+            :get_and_pack_code,
+            :push_code,
+            :unpack,
+            :link,
+            :bundle,
+            :auto_upgrade,
+            :clean_up,
+            :restart
+          ]
+          run_actions
         end
 
         def create_directories
@@ -30,7 +49,7 @@ module Deploy
         def get_and_pack_code
           run_now! "cd #{Config.get(:local_root)}"
           run_now! "git pull origin master"
-          run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor/ruby' -cjf /tmp/#{Config.get(:app_name)}.tar.bz2 *"
+          run_now! "tar --exclude='.git' --exclude='log' --exclude='tmp' --exclude='vendor/ruby' -cjf /tmp/#{Config.get(:app_name)}.tar.bz2 *"
         end
 
         def push_code
@@ -55,9 +74,6 @@ module Deploy
               "tar -xjf /tmp/#{Config.get(:app_name)}.tar.bz2",
             ]
             remote "chown -Rf #{Config.get(:remote_user)}:#{Config.get(:remote_group)} #{Config.get(:app_root)}"
-            remote "find #{Config.get(:current_path)} -type d -exec chmod 775 '{}' \\;"
-            remote "find #{Config.get(:current_path)} -type f -exec chmod 664 '{}' \\;"
-            remote "find #{Config.get(:shared_path)}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
         end
 
         def link
@@ -65,6 +81,14 @@ module Deploy
 
           link_exists(Config.get(:current_path), [ "rm #{Config.get(:current_path)}" ])
           link_not_exists("#{Config.get(:releases_path)}/$LATEST_RELEASE", ["ln -s #{Config.get(:releases_path)}/$LATEST_RELEASE #{Config.get(:current_path)}"])
+
+          remote "find #{Config.get(:current_path)} -type d -exec chmod 775 '{}' \\;"
+          remote "find #{Config.get(:current_path)} -type f -exec chmod 664 '{}' \\;"
+
+          remote "mkdir #{Config.get(:shared_path)}/vendor/cache"
+          remote "rsync -a --delete #{Config.get(:current_path)}/vendor/cache/ #{Config.get(:shared_path)}/vendor/cache/"
+          remote "rm -rf #{Config.get(:current_path)}/vendor"
+
           link_not_exists("#{Config.get(:shared_path)}/log", ["ln -s #{Config.get(:shared_path)}/log #{Config.get(:releases_path)}/$LATEST_RELEASE/log"])
           link_not_exists("#{Config.get(:shared_path)}/vendor", ["ln -s #{Config.get(:shared_path)}/vendor #{Config.get(:releases_path)}/$LATEST_RELEASE/vendor"])
           link_not_exists("#{Config.get(:shared_path)}/tmp", ["ln -s #{Config.get(:shared_path)}/tmp #{Config.get(:releases_path)}/$LATEST_RELEASE/tmp"])
@@ -75,6 +99,7 @@ module Deploy
           remote "rvm rvmrc trust #{Config.get(:app_root)}"
           remote "cd #{Config.get(:current_path)}"
           remote "bundle install --without test development --deployment"
+          remote "find #{Config.get(:shared_path)}/vendor -type d -name \"bin\" -exec chmod -Rf 775 '{}' \\;"
         end
 
         def clean_up
