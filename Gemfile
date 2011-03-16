@@ -3,8 +3,6 @@ source "http://rubygems.org"
 # Specify your gem's dependencies in deploy.gemspec
 gemspec rescue nil
 
-gem 'configatron'
-
 # Testing
 group 'test' do
   #unit tests
