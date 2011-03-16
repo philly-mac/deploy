@@ -2,7 +2,7 @@ Very simple tool to do deployments.
 
 syntax
 
-dep -e|--environment -r|--recipe -m|--method [-c|--config] [-d|--dry] [-q|--quiet]
+    dep -e|--environment -r|--recipe -m|--method [-c|--config] [-d|--dry] [-q|--quiet]
 
     -e --environment:
         Allows you to specify the environment, which can be used to write different recipes for different environments
