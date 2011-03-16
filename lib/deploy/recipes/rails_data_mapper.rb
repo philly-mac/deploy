@@ -24,13 +24,13 @@ module Deploy
           mkdir "#{Config.get(:shared_path)}/vendor"
           mkdir "#{Config.get(:shared_path)}/tmp"
           mkdir "#{Config.get(:releases_path)}"
-          remote "echo \"rvm --create use default@#{Config.get(:gemset_name)}\" > #{Config.get(:app_root)}/.rvmrc"
+          remote "echo \"rvm --create use default\" > #{Config.get(:app_root)}/.rvmrc"
         end
 
         def get_and_pack_code
           run_now! "cd #{Config.get(:local_root)}"
           run_now! "git pull origin master"
-          run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor' -cjf /tmp/#{Config.get(:app_name)}.tar.bz2 *"
+          run_now! "tar --exclude='.git' --exclude='log' --exclude='vendor/ruby' -cjf /tmp/#{Config.get(:app_name)}.tar.bz2 *"
         end
 
         def push_code
