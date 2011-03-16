@@ -5,23 +5,26 @@ module Deploy
     class << self
 
       def config
-        configatron
+        @@config ||= {}
+        @@config[:default] ||= {}
+        @@config[:clazz] ||= {}
+        @@config
       end
 
       def set(key, value)
-        configatron.configure_from_hash({:default => {key => value}})
+        self.config[:default][key] = value
       end
 
       def get(key)
-        configatron.default.retrieve(key.to_sym, nil)
+        self.config[:default][key]
       end
 
       def set_clazz(key, value)
-        configatron.configure_from_hash({:clazz => {key => value}})
+        self.config[:clazz][key] = value
       end
 
       def get_clazz(key)
-        configatron.clazz.retrieve(key.to_sym, nil)
+        self.config[:clazz][key]
       end
 
     end
