@@ -12,8 +12,9 @@ module Deploy
           self.actions = [
             :get_and_pack_code,
             :push_code,
-            :unpack,
+            :get_release_tag,
             :link,
+            :unpack,
             :bundle,
             :setup_db,
             :auto_migrate,
@@ -27,8 +28,9 @@ module Deploy
           self.actions = [
             :get_and_pack_code,
             :push_code,
-            :unpack,
+            :get_release_tag,
             :link,
+            :unpack,
             :bundle,
             :auto_upgrade,
             :clean_up,
@@ -64,34 +66,28 @@ module Deploy
           remote "bundle exec rake db:create RAILS_ENV=#{Config.get(:env)}"
         end
 
+        def get_release_tag
+          Config.set "release_tag", Time.now.strftime('%Y%m%d%H%M%S')
+        end
+
         def unpack
-          release_stamp = Time.now.strftime('%Y%m%d%H%M%S')
           file_exists "/tmp/#{Config.get(:app_name)}.tar.bz2",
             [
-              "cd #{Config.get(:releases_path)}",
-              "mkdir #{release_stamp}",
-              "cd #{release_stamp}",
+              "cd #{Config.get(:releases_path)}/#{Config.get("release_tag")}",
               "tar -xjf /tmp/#{Config.get(:app_name)}.tar.bz2",
             ]
-            remote "chown -Rf #{Config.get(:remote_user)}:#{Config.get(:remote_group)} #{Config.get(:app_root)}"
+          remote "find #{Config.get(:current_path)} -type d -exec chmod 775 '{}' \\;"
+          remote "find #{Config.get(:current_path)} -type f -exec chmod 664 '{}' \\;"
+          remote "chown -Rf #{Config.get(:remote_user)}:#{Config.get(:remote_group)} #{Config.get(:app_root)}"
         end
 
         def link
-          remote "for i in $( ls -rl -m1 #{Config.get(:releases_path)} ); do LATEST_RELEASE=$i; break; done"
-
           link_exists(Config.get(:current_path), [ "rm #{Config.get(:current_path)}" ])
-          link_not_exists("#{Config.get(:releases_path)}/$LATEST_RELEASE", ["ln -s #{Config.get(:releases_path)}/$LATEST_RELEASE #{Config.get(:current_path)}"])
-
-          remote "find #{Config.get(:current_path)} -type d -exec chmod 775 '{}' \\;"
-          remote "find #{Config.get(:current_path)} -type f -exec chmod 664 '{}' \\;"
-
-          remote "mkdir #{Config.get(:shared_path)}/vendor/cache"
-          remote "rsync -a --delete #{Config.get(:current_path)}/vendor/cache/ #{Config.get(:shared_path)}/vendor/cache/"
-          remote "rm -rf #{Config.get(:current_path)}/vendor"
-
-          link_not_exists("#{Config.get(:shared_path)}/log", ["ln -s #{Config.get(:shared_path)}/log #{Config.get(:releases_path)}/$LATEST_RELEASE/log"])
-          link_not_exists("#{Config.get(:shared_path)}/vendor", ["ln -s #{Config.get(:shared_path)}/vendor #{Config.get(:releases_path)}/$LATEST_RELEASE/vendor"])
-          link_not_exists("#{Config.get(:shared_path)}/tmp", ["ln -s #{Config.get(:shared_path)}/tmp #{Config.get(:releases_path)}/$LATEST_RELEASE/tmp"])
+          remote "mkdir #{Config.get(:releases_path)}/#{Config.get("release_tag")}"
+          remote "ln -s #{Config.get(:releases_path)}/#{Config.get("release_tag")} #{Config.get(:current_path)}"
+          remote "ln -s #{Config.get(:shared_path)}/log #{Config.get(:current_path)}/log"
+          remote "ln -s #{Config.get(:shared_path)}/vendor #{Config.get(:current_path)}/vendor"
+          remote "ln -s #{Config.get(:shared_path)}/tmp #{Config.get(:current_path)}/tmp"
         end
 
         def bundle
