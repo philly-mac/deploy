@@ -7,16 +7,16 @@ module Deploy
 
       class << self
 
-        def desc
+        def descriptions
           @@descriptions ||= []
         end
 
-        def description(method_name, description)
-          desc << [method_name, description]
+        def desc(method_name, description)
+          descriptions << [method_name, description]
         end
 
-        def descriptions
-          desc.sort{|a,b| a.first <=> b.first}
+        def all_descriptions
+          descriptions.sort{|a,b| a.first <=> b.first}
         end
 
         def actions=(actions)

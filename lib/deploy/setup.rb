@@ -60,7 +60,7 @@ module Deploy
 
         if show_methods
           if recipe_clazz
-            recipe_clazz.descriptions.each do |description|
+            recipe_clazz.all_descriptions.each do |description|
               puts "#{spacing(description.first, 40)}#{description.last}"
             end
           end
