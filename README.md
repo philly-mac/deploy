@@ -22,3 +22,7 @@ syntax
     -q --quiet:
         By default everything is very verbose, if you wish to quiet the output you can specify this option
 
+    -M --methods:
+        Displays all the methods that can be executed with the -m switch. Must be used with -r as only the methods
+        for that recipe will be displayed
+
