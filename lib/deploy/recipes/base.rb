@@ -7,6 +7,10 @@ module Deploy
 
       class << self
 
+        def my_methods
+
+        end
+
         def actions=(actions)
           @@actions = actions
         end
