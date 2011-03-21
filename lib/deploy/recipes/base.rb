@@ -2,13 +2,21 @@ module Deploy
   module Recipes
     class Base
 
-      extend ::Deploy::Base
-      extend ::Deploy::RemoteCommands
+      include ::Deploy::Base
+      include ::Deploy::RemoteCommands
 
       class << self
 
-        def my_methods
+        def desc
+          @@descriptions ||= []
+        end
 
+        def description(method_name, description)
+          desc << [method_name, description]
+        end
+
+        def descriptions
+          desc.sort{|a,b| a.first <=> b.first}
         end
 
         def actions=(actions)
@@ -20,15 +28,11 @@ module Deploy
           @@actions
         end
 
-        def run_actions(after_spec = nil)
+        def run_actions(run_clazz)
           actions.each do |action|
             puts "\n*** #{action} ***" if Config.get(:verbose)
-            self.send action
-            push!
-            if after_spec && after_spec[:after] == action
-              after_spec[:actions] = [after_spec[:actions]] if !after_spec[:actions].is_a?(Array)
-              after_spec[:actions].each{|as_action| self.send(as_action); push! }
-            end
+            run_clazz.send action
+            run_clazz.push!
           end
         end
 

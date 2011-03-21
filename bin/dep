@@ -33,6 +33,7 @@ else
     opts.on("-c", "--config CONFIG", "Path to custome config")      { |c| options[:config]      = c }
     opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
     opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]       = q }
+    opts.on("-M", "--methods", "Show methods")                      { |m| options[:methods]     = m }
   end
   op.parse!
   exit ::Deploy::Setup.init(options, op.summarize)

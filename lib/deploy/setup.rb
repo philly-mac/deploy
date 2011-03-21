@@ -4,17 +4,20 @@ module Deploy
     class << self
 
       def init(options, summary)
+        show_methods   = options[:methods]
+        recipe         = options[:recipe]
 
-        # Check whether we have the minimum set of options
-        [:recipe, :environment, :method].each do |param|
+        if !(show_methods && recipe)
+          # Check whether we have the minimum set of options
+          [:recipe, :environment, :method].each do |param|
           unless options.keys.include?(param)
-            puts summary
-            return 1
+              puts summary
+              return 1
+            end
           end
         end
 
         # Assaign the parsed options to local variables
-        recipe         = options[:recipe]
         method         = options[:method]
         config_file    = options[:config]
 
@@ -55,7 +58,16 @@ module Deploy
           end
         end
 
-        recipe_clazz.send(method.to_sym) if recipe_clazz
+        if show_methods
+          if recipe_clazz
+            recipe_clazz.descriptions.each do |description|
+              puts "#{spacing(description.first, 40)}#{description.last}"
+            end
+          end
+          return 0
+        end
+
+        recipe_clazz.new.send(method.to_sym) if recipe_clazz
         return 0
       end
 
@@ -95,6 +107,14 @@ module Deploy
 
       def set(key,value)
         config.set(key,value)
+      end
+
+      private
+
+      def spacing(word, spaces)
+        spaces_num = spaces - word.size
+        spaces_num.times{ word << ' '}
+        word
       end
 
     end
