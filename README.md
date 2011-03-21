@@ -26,3 +26,16 @@ syntax
         Displays all the methods that can be executed with the -m switch. Must be used with -r as only the methods
         for that recipe will be displayed
 
+examples
+
+This will execute the deploy method in the RailsDataMapper class located in the lib/deploy/recipes folder if it exists
+
+    dep -r production -r rails_data_mapper -m deploy
+
+This will list the methods that are available to execute from the RailsDataMapper class
+
+    dep -r rails_data_mapper -M
+
+This will show what will happen when the deploy method is executed in the RailsDataMapper class, but will not actually do anything
+
+    dep -r production -r rails_data_mapper -m deploy -d
