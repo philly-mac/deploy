@@ -26,6 +26,10 @@ syntax
         Displays all the methods that can be executed with the -m switch. Must be used with -r as only the methods
         for that recipe will be displayed
 
+    -R --revert:
+        Allows you to revert to any previous release. Displays a list of all the archived releases and allows you to
+        choose which to switch to
+
 examples
 
 This will execute the deploy method in the RailsDataMapper class located in the lib/deploy/recipes folder if it exists

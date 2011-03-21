@@ -4,21 +4,19 @@ module Deploy
     class << self
 
       def init(options, summary)
-        show_methods   = options[:methods]
-        recipe         = options[:recipe]
-
-        if !(show_methods && recipe)
-          # Check whether we have the minimum set of options
-          [:recipe, :environment, :method].each do |param|
+        # Check whether we have the minimum set of options
+        required_params(options).each do |param|
           unless options.keys.include?(param)
-              puts summary
-              return 1
-            end
+            puts summary
+            return 1
           end
         end
 
         # Assaign the parsed options to local variables
-        method         = options[:method]
+        show_methods   = options[:methods]
+        recipe         = options[:recipe]
+        should_revert  = options[:revert]
+        method = should_revert ? "revert" : options[:method]
         config_file    = options[:config]
 
         config.set :env,     options[:environment]
@@ -110,6 +108,18 @@ module Deploy
       end
 
       private
+
+      def required_params(options)
+        r_params = {
+          :default => [:recipe, :environment, :method],
+          :methods => [:recipe],
+          :revert  => [:recipe, :environment],
+        }
+
+        return r_params[:methods] if options[:methods]
+        return r_params[:revert] if options[:revert]
+        r_params[:default]
+      end
 
       def spacing(word, spaces)
         spaces_num = spaces - word.size

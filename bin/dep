@@ -34,6 +34,7 @@ else
     opts.on("-d", "--dry", "Just show the commands")                { |d| options[:dry]         = d }
     opts.on("-q", "--quiet", "Less noise")                          { |q| options[:quiet]       = q }
     opts.on("-M", "--methods", "Show methods")                      { |m| options[:methods]     = m }
+    opts.on("-R", "--revert", "revert the deployment")              { |r| options[:revert]     = r }
   end
   op.parse!
   exit ::Deploy::Setup.init(options, op.summarize)
