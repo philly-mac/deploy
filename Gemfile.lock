@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    deploy (0.0.8)
+    deploy (0.5)
 
 GEM
   remote: http://rubygems.org/

@@ -21,7 +21,7 @@ module Deploy
 
         config.set :env,     options[:environment]
         config.set :dry_run, options[:dry]
-        config.set :verbose, config.get(:dry_run) ? true : !options[:quiet]
+        config.set :verbose, (config.get(:dry_run) && config.get(:env) != 'test') ? true : !options[:quiet]
 
         # Set the configuration options
         config.set :deploy_root, "/var/www"
@@ -45,6 +45,7 @@ module Deploy
         else
           begin
             # Check if we are using an alias
+            # puts "THE RECIPE IS #{recipe}"
             alias_recipe = config.get_clazz(recipe)
             recipe = alias_recipe if alias_recipe && alias_recipe != recipe
 
@@ -101,10 +102,6 @@ module Deploy
         config.set :current_path,  "#{config.get(:app_root)}/current"
         config.set :shared_path,   "#{config.get(:app_root)}/shared"
         config.set :releases_path, "#{config.get(:app_root)}/releases"
-      end
-
-      def set(key,value)
-        config.set(key,value)
       end
 
       private

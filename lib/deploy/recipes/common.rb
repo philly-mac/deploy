@@ -7,7 +7,7 @@ module Deploy
           desc "setup", "create the directory structure needed for a deployment"
           def setup
             self.class.actions = [:create_directories]
-            run_actions(self)
+            self.class.run_actions(self)
           end
 
           desc "deploy_create", "Deploy the app to the server, and completely wipe the database tables and recreate them"

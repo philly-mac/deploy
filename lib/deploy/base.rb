@@ -42,7 +42,7 @@ module Deploy
         cmd << "#{all_commands}"
         cmd << "'"
         run_now! cmd
-        puts "\n"
+        puts "\n" if config.get(:env) != 'test'
         self.commands = []
       end
     end
