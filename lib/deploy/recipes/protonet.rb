@@ -32,7 +32,7 @@ module Deploy
           :deploy_monit,
           :restart_apache
         ]
-        self.class.run_actions
+        self.class.run_actions(self)
       end
 
       def deploy
@@ -47,7 +47,7 @@ module Deploy
           :restart_services,
           :restart_apache,
         ]
-        self.class.run_actions
+        self.class.run_actions(self)
       end
 
       def deploy_monit
