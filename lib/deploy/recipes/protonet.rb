@@ -24,7 +24,7 @@ module Deploy
       end
 
       def setup
-        self.actions = [
+        self.class.actions = [
           :prepare_code,
           :bundle,
           :setup_db,
@@ -32,11 +32,11 @@ module Deploy
           :deploy_monit,
           :restart_apache
         ]
-        run_actions
+        self.class.run_actions
       end
 
       def deploy
-        self.actions = [
+        self.class.actions = [
           :prepare_code,
           :bundle,
           :migrate,
@@ -47,7 +47,7 @@ module Deploy
           :restart_services,
           :restart_apache,
         ]
-        run_actions
+        self.class.run_actions
       end
 
       def deploy_monit
