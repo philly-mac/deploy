@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Require standard files
-require "deploy"
+require "#{File.dirname(File.expand_path(__FILE__))}/../lib/deploy"
 
 command = ARGV.join(' ')
 options = {}
@@ -27,5 +27,4 @@ else
   op.parse!
   exit ::Deploy::Setup.init(options, op.summarize)
 end
-
 
