@@ -104,6 +104,10 @@ module Deploy
         config.set :releases_path, "#{config.get(:app_root)}/releases"
       end
 
+      def set(key,value)
+        config.set(key,value)
+      end
+
       private
 
       def required_params(options)
