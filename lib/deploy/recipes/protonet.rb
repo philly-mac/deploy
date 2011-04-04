@@ -124,7 +124,8 @@ module Deploy
       def get_code_and_unpack
         FileUtils.cd "/tmp"
         run_now! "rm -f /tmp/dashboard.tar.gz"
-        run_now!("wget http://releases.protonet.info/release/get/#{config.get(:key)} -O dashboard.tar.gz") && unpack
+        release = "/#{ENV["RELEASE_VERSION"]}" if ENV["RELEASE_VERSION"]
+        run_now!("wget http://releases.protonet.info/release/get/#{config.get(:key)}#{release} -O dashboard.tar.gz") && unpack
       end
 
       def release_dir
