@@ -19,6 +19,8 @@ module Deploy
         method = should_revert ? "revert" : options[:method]
         config_file    = options[:config]
 
+        set_parameters(options[:parameters])
+
         config.set :env,     options[:environment]
         config.set :dry_run, options[:dry]
         config.set :verbose, (config.get(:dry_run) && config.get(:env) != 'test') ? true : !options[:quiet]
@@ -110,23 +112,32 @@ module Deploy
 
       private
 
-      def required_params(options)
-        r_params = {
-          :default => [:recipe, :environment, :method],
-          :methods => [:recipe],
-          :revert  => [:recipe, :environment],
-        }
+        def set_parameters(parameters)
+          return unless parameters
+          params = parameters.split(',')
+          params.each do |p|
+            key, value = p.split('=')
+            config.set(key,value)
+          end
+        end
 
-        return r_params[:methods] if options[:methods]
-        return r_params[:revert] if options[:revert]
-        r_params[:default]
-      end
+        def required_params(options)
+          r_params = {
+            :default => [:recipe, :environment, :method],
+            :methods => [:recipe],
+            :revert  => [:recipe, :environment],
+          }
 
-      def spacing(word, spaces)
-        spaces_num = spaces - word.size
-        spaces_num.times{ word << ' '}
-        word
-      end
+          return r_params[:methods] if options[:methods]
+          return r_params[:revert] if options[:revert]
+          r_params[:default]
+        end
+
+        def spacing(word, spaces)
+          spaces_num = spaces - word.size
+          spaces_num.times{ word << ' '}
+          word
+        end
 
     end
   end

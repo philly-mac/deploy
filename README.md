@@ -30,6 +30,10 @@ syntax
         Allows you to revert to any previous release. Displays a list of all the archived releases and allows you to
         choose which to switch to
 
+    -p --parameter:
+        Allows you to pass a comma separated list of key=value pairs to be used in the app
+        E.g. "TEST1=test1,TEST2=test2"
+
 examples
 
 This will execute the deploy method in the RailsDataMapper class located in the lib/deploy/recipes folder if it exists

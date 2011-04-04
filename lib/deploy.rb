@@ -23,4 +23,3 @@ require 'deploy/remote_commands'
 
 require 'deploy/recipes/base'
 require 'deploy/recipes/common'
-
