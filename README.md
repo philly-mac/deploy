@@ -30,7 +30,7 @@ syntax
         Allows you to revert to any previous release. Displays a list of all the archived releases and allows you to
         choose which to switch to
 
-    -p --parameter:
+    -p --parameters:
         Allows you to pass a comma separated list of key=value pairs to be used in the app
         E.g. "TEST1=test1,TEST2=test2"
 
