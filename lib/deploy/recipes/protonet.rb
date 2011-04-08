@@ -164,7 +164,7 @@ module Deploy
 
         FileUtils.cd latest_deploy
 
-        run_now! "#{bundle_cleanup}; bundle --without=test:cucumber"
+        run_now! "#{bundle_cleanup}; bundle install --without=test cucumber"
       end
 
       def migrate
