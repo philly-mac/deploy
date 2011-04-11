@@ -177,8 +177,10 @@ module Deploy
         FileUtils.ln_s latest_deploy, config.get(:current_path)
       end
 
+      # todo: one should be enough
       def restart_apache
         FileUtils.touch "#{config.get(:current_path)}/tmp/restart.txt"
+        monit_command "restart apache2"
       end
 
       def restart_services
